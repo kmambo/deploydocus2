@@ -3,7 +3,7 @@ from typing import Self, Sequence
 
 import pydantic as pyd
 
-from .pkg import K8sModel
+from .pkg import K8sComponentModel
 
 
 class Component(pyd.BaseModel, ABC):
@@ -12,7 +12,7 @@ class Component(pyd.BaseModel, ABC):
     Roughly the equivalent of a Helm chart
     """
 
-    _lock: Sequence[K8sModel | Self]
+    _lock: Sequence[K8sComponentModel | Self]
     locked: bool = pyd.Field(default=False, exclude=True)
 
     @abstractmethod
@@ -25,5 +25,5 @@ class Component(pyd.BaseModel, ABC):
         ...
 
     @pyd.computed_field
-    def lock(self) -> Sequence[K8sModel | Self]:
+    def lock(self) -> Sequence[K8sComponentModel | Self]:
         return self._lock

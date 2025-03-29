@@ -1,6 +1,6 @@
-import itertools
 import logging
-from functools import wraps
+from functools import reduce, wraps
+from operator import concat
 from typing import LiteralString, Self
 
 import pydantic as pyd
@@ -66,7 +66,7 @@ def autosort(f):
     return wrapped
 
 
-class K8sModel(pyd.BaseModel):
+class K8sComponentModel(pyd.BaseModel):
     """
     This is created by a Component
     """
@@ -364,43 +364,38 @@ class K8sModel(pyd.BaseModel):
         Returns:
 
         """
-        manifests: ManifestSequence = list(
-            itertools.chain.from_iterable(
-                [
-                    m
-                    for m in [
-                        self.render_namespaces(),
-                        self.render_networkpolicies(),
-                        self.render_resourcequotas(),
-                        self.render_limitranges(),
-                        self.render_poddisruptionbudgets(),
-                        self.render_serviceaccounts(),
-                        self.render_secrets(),
-                        self.render_configmaps(),
-                        self.render_storageclasses(),
-                        self.render_persistentvolumes(),
-                        self.render_persistentvolumeclaims(),
-                        self.render_customresourcedefinitions(),
-                        self.render_clusterroles(),
-                        self.render_clusterrolebindings(),
-                        self.render_roles(),
-                        self.render_rolebindings(),
-                        self.render_services(),
-                        self.render_daemonsets(),
-                        self.render_pods(),
-                        self.render_replicationcontrollers(),
-                        self.render_replicasets(),
-                        self.render_deployments(),
-                        self.render_horizontalpodautoscalers(),
-                        self.render_statefulsets(),
-                        self.render_jobs(),
-                        self.render_cronjobs(),
-                        self.render_ingresses(),
-                        self.render_apiservices(),
-                    ]
-                    if m
-                ]
-            )
+        manifests: ManifestSequence = reduce(
+            concat,
+            [
+                self.render_namespaces(),
+                self.render_networkpolicies(),
+                self.render_resourcequotas(),
+                self.render_limitranges(),
+                self.render_poddisruptionbudgets(),
+                self.render_serviceaccounts(),
+                self.render_secrets(),
+                self.render_configmaps(),
+                self.render_storageclasses(),
+                self.render_persistentvolumes(),
+                self.render_persistentvolumeclaims(),
+                self.render_customresourcedefinitions(),
+                self.render_clusterroles(),
+                self.render_clusterrolebindings(),
+                self.render_roles(),
+                self.render_rolebindings(),
+                self.render_services(),
+                self.render_daemonsets(),
+                self.render_pods(),
+                self.render_replicationcontrollers(),
+                self.render_replicasets(),
+                self.render_deployments(),
+                self.render_horizontalpodautoscalers(),
+                self.render_statefulsets(),
+                self.render_jobs(),
+                self.render_cronjobs(),
+                self.render_ingresses(),
+                self.render_apiservices(),
+            ],
         )
 
         return manifests

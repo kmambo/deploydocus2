@@ -13,7 +13,6 @@ from kubernetes_asyncio.client.models import (  # type: ignore[import-untyped]
     V1CustomResourceDefinition,
     V1DaemonSet,
     V1Deployment,
-    V1HorizontalPodAutoscaler,
     V1Ingress,
     V1Job,
     V1LimitRange,
@@ -152,7 +151,7 @@ type K8sModel = Union[
     V1CustomResourceDefinition,
     V1DaemonSet,
     V1Deployment,
-    V1HorizontalPodAutoscaler,
+    V2HorizontalPodAutoscaler,
     V1Ingress,
     V1Job,
     V1LimitRange,
@@ -183,6 +182,5 @@ K8sListModel = Union[
 
 K8sModelSequence = Sequence[K8sModel]
 # TODO: Deprecate the ones below
-ManifestDict = Mapping[str, Any] | K8sModel
-ManifestSequence = Sequence[ManifestDict]
-ManifestAll = ManifestDict | ManifestSequence
+K8sManifest = Mapping[str, Any] | K8sModel
+ManifestSequence = Sequence[K8sManifest]
