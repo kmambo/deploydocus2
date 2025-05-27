@@ -192,3 +192,4 @@ cython_debug/
 .firebase/
 
 *.diff
+/poetry.toml

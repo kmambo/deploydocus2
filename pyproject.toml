@@ -9,7 +9,7 @@ readme = "README.md"
 requires-python = ">=3.12,<4.0"
 dependencies = [
     "pydantic (>=2.10.6,<3.0.0)",
-    "kubernetes-asyncio-pydantic @ file:///Users/partho/kubernetes-python-client-project-root/python-async-client/dist/kubernetes_asyncio_pydantic-29.1.0-py3-none-any.whl",
+    "kubernetes-asyncio-pydantic @ git+https://github.com/kmambo/kubernetes-pydantic-asyncio-client.git@v32.0.1",
 ]
 license = "AGPL-3.0-or-later"
 classifiers = [
@@ -28,14 +28,15 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.group.dev.dependencies]
 isort = "^6.0.1"
 mypy = "^1.15.0"
-flake8 = "^7.1.2"
+flake8 = "^7.2.0"
 black = "^25.1.0"
 wheel = "^0.45.1"
-cython = "^3.0.12"
+cython = "^3.1.1"
 flake8-pydantic = "^0.4.0"
-setuptools = "^75.8.2"
-pip = "^25.0.1"
+setuptools = "^80.8.0"
+pip = "^25.1.1"
 pytest = "^8.3.5"
+ipython = "^9.2.0"
 
 
 [tool.poetry.group.docs.dependencies]

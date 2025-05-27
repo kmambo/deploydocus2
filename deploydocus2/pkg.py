@@ -1,12 +1,12 @@
 import logging
-from functools import reduce, wraps
+from functools import reduce
 from operator import concat
-from typing import LiteralString, Self
+from typing import LiteralString
 
 import pydantic as pyd
+from pydantic import Field
 
 from .types import (
-    SUPPORTED_KINDS,
     APIServiceSequence,
     ClusterRoleBindingSequence,
     ClusterRoleSequence,
@@ -46,43 +46,22 @@ DEPLOYDOCUS_DOMAIN: LiteralString = "deploydocus.io"
 
 
 class InstanceSettings(pyd.BaseModel):
-    instance_name: str
-    instance_version: str
-    instance_namespace: str
-    image_name_with_tag: str | None = None
-
-
-def autosort(f):
-    @wraps(f)
-    def wrapped(*args, **kwargs):
-        ret: ManifestSequence = f(*args, **kwargs)
-        ret.sort(
-            key=lambda obj: list(SUPPORTED_KINDS).index(
-                obj["kind"] if isinstance(obj, dict) else obj.kind
-            )
-        )
-        return ret
-
-    return wrapped
+    name: str
+    namespace: str | None = Field(
+        description="The namespace in which the application will be deployed"
+    )
 
 
 class K8sComponentModel(pyd.BaseModel):
-    """
-    This is created by a Component
-    """
+    """This is created by a Component and represents a collection of Kubernetes
+    objects."""
 
-    pkg_name: str = pyd.Field(default="", description="A name of this application")
+    pkg_name: str = pyd.Field(description="A name of this application")
     pkg_version: str = pyd.Field(
         description="Provide a version number for the application. This is independent"
         " of the individual components  of the application"
     )
     instance_settings: InstanceSettings
-
-    @pyd.model_validator(mode="after")
-    def validate_after(self: Self) -> Self:
-        if not self.pkg_name:
-            self.pkg_name = self.__class__.__name__
-        return self
 
     @property
     def default_labels(self) -> LabelsDict:
@@ -90,8 +69,8 @@ class K8sComponentModel(pyd.BaseModel):
         and can and should be applied to the mani"""
         return {
             "app.kubernetes.io/name": self.pkg_name,
-            "app.kubernetes.io/instance": self.instance_settings.instance_name,
-            "app.kubernetes.io/version": self.instance_settings.instance_version,
+            "app.kubernetes.io/instance": self.instance_settings.name,
+            "app.kubernetes.io/version": self.pkg_version,
             "app.kubernetes.io/managed-by": DEPLOYDOCUS_DOMAIN,
             "deploydocus-pkg": f"{self.pkg_name}-{self.pkg_version}",
         }
@@ -100,7 +79,7 @@ class K8sComponentModel(pyd.BaseModel):
     def default_selectors(self) -> LabelsSelector:
         return {
             "app.kubernetes.io/name": self.pkg_name,
-            "app.kubernetes.io/instance": self.instance_settings.instance_name,
+            "app.kubernetes.io/instance": self.instance_settings.name,
             "app.kubernetes.io/managed-by": DEPLOYDOCUS_DOMAIN,
         }
 
