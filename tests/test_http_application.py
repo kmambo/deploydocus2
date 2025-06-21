@@ -114,8 +114,13 @@ def test_render_deployment(
     assert container_dict["image"] == application.app_image
     assert container_dict["command"] == application.app_command
     assert "env" not in container_dict  # env vars are mounted
-    assert container_dict["args"] == application.app_entrypoint_args \
-        if application.app_entrypoint_args else "args" not in container_dict
-    assert application.liveness_probe is None and \
-           "liveness" not in container_dict or "httpGet" in container_dict["livenessProbe"]
-    
+    assert (
+        container_dict["args"] == application.app_entrypoint_args
+        if application.app_entrypoint_args
+        else "args" not in container_dict
+    )
+    assert (
+        application.liveness_probe is None
+        and "liveness" not in container_dict
+        or "httpGet" in container_dict["livenessProbe"]
+    )

@@ -12,11 +12,13 @@ from kubernetes_asyncio.models import (
     V1DeploymentSpec,
     V1HTTPGetAction,
     V1LabelSelector,
+    V1ObjectMeta,
     V1PodSpec,
     V1PodTemplateSpec,
     V1Probe,
+    V1ServicePort,
+    V1ServiceSpec,
 )
-from kubernetes_asyncio.models import V1ObjectMeta, V1ServicePort, V1ServiceSpec
 from pydantic import (
     AfterValidator,
     BaseModel,
