@@ -1,8 +1,8 @@
 from collections import OrderedDict
 from collections.abc import Sequence
-from typing import Any, LiteralString, Mapping, NotRequired, TypedDict, Union
+from typing import Any, Mapping, Union
 
-from kubernetes_asyncio.client.models import (  # type: ignore[import-untyped]
+from kubernetes_asyncio.models import (  # type: ignore[import-untyped]
     V1APIService,
     V1ClusterRole,
     V1ClusterRoleBinding,
@@ -38,7 +38,7 @@ from kubernetes_asyncio.client.models import (  # type: ignore[import-untyped]
     V2HorizontalPodAutoscaler,
 )
 
-SUPPORTED_KINDS: OrderedDict[LiteralString, LiteralString] = OrderedDict(
+SUPPORTED_KINDS: OrderedDict[str, str] = OrderedDict(
     [
         ("Namespace", "v1"),
         ("NetworkPolicy", "networking.k8s.io/v1"),
@@ -77,26 +77,6 @@ SUPPORTED_KINDS: OrderedDict[LiteralString, LiteralString] = OrderedDict(
 )
 
 SUPPORTED_KUBERNETES_KINDS: list[str] = list(SUPPORTED_KINDS.keys())
-
-LabelsSelector = TypedDict(
-    "LabelsSelector",
-    {
-        "app.kubernetes.io/instance": str,
-        "app.kubernetes.io/managed-by": str,
-        "app.kubernetes.io/name": NotRequired[str],
-    },
-)
-
-LabelsDict = TypedDict(
-    "LabelsDict",
-    {
-        "app.kubernetes.io/instance": str,
-        "app.kubernetes.io/name": str,
-        "app.kubernetes.io/version": str,
-        "deploydocus-pkg": str,
-        "app.kubernetes.io/managed-by": str,
-    },
-)
 
 type NamespaceSequence = Sequence[Mapping[str, Any] | V1Namespace]
 type NetworkPolicySequence = Sequence[Mapping[str, Any] | V1NetworkPolicy]

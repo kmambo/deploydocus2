@@ -1,6 +1,6 @@
 from typing import Any
 
-from kubernetes_asyncio.client import models
+from kubernetes_asyncio import models
 
 
 class Namespace(models.V1Namespace):

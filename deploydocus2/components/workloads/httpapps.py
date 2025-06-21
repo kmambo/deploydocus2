@@ -1,14 +1,32 @@
 import abc
+import base64
 import enum
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Callable, Optional, Self
+from typing import Annotated, Callable, Optional, Self, cast
 
-from kubernetes_asyncio.client import V1ObjectMeta, V1ServiceSpec, V1ServicePort
-from pydantic import BaseModel, Field, model_validator
+from kubernetes_asyncio.models import (
+    IntstrIntOrString,
+    V1Container,
+    V1ContainerPort,
+    V1DeploymentSpec,
+    V1HTTPGetAction,
+    V1LabelSelector,
+    V1PodSpec,
+    V1PodTemplateSpec,
+    V1Probe,
+)
+from kubernetes_asyncio.models import V1ObjectMeta, V1ServicePort, V1ServiceSpec
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    Field,
+    SecretStr,
+    model_validator,
+)
 
 from deploydocus2.components.models import DeploydocusComponent
-from deploydocus2.model_partials import ConfigMap, Secret, Service
+from deploydocus2.model_partials import ConfigMap, Deployment, Secret, Service
 from deploydocus2.pkg import InstanceSettings, K8sComponentModel
 from deploydocus2.types import (
     ConfigMapSequence,
@@ -41,16 +59,17 @@ class HttpProbe(BaseModel):
         description="The relative URL the Kubernetes will "
         "periodically issue HTTP GET requests to.",
     )
-    check_freq: int = Field(
-        default=10,
+    check_freq: int | None = Field(
+        default=None,
         description="The frequency of liveness checks (in secs). This is ignored if "
-        "liveness is unset.",
+        "liveness is unset. If unset, defaults to 10 seconds.",
     )
 
     @model_validator(mode="after")
     def model_validate_after(self) -> Self:
         self.rel_url = self.rel_url or self._default_url
         return self
+
 
 class HttpLivenessProbe(HttpProbe, default_url="/livez"):
     delay_first_probe: int | None = Field(
@@ -89,10 +108,10 @@ class HttpIngressRule(BaseModel):
         "See docs for examples"
     )
     implementation_specific: bool = Field(
-        False, description="Set to True if you want the path rule to "
+        default=False, description="Set to True if you want the path rule to "
     )
     ingress_class_name: str | None = Field(
-        None,
+        default=None,
         description="The name of the ingress class. Leave it at None if you want to use"
         " the default class. Unless ",
     )
@@ -113,7 +132,6 @@ def mk_upper_case(key: str) -> str:
 
 
 class KeysMapper(abc.ABC):
-
     _key_mapper_fn: Callable[[str], str] = lambda x: x
 
     @property
@@ -138,7 +156,7 @@ class KeysMapper(abc.ABC):
     def map_keys(self) -> Mapping[str, str]: ...
 
 
-class KeyValuePairsNonSecrets(BaseModel, KeysMapper):
+class KeyValuePairsNonSensitive(BaseModel, KeysMapper):
     """Becomes a Kubernetes ConfigMap which exposes these KV-pairs as either
     environment variables or as files mounted on the container's as a volume on a given
     path. Note: do not use this for any sensitive  info such as passwords, SSL private
@@ -184,6 +202,14 @@ class KeyValuePairsNonSecrets(BaseModel, KeysMapper):
                 labels=labels or {},
             ),
         )
+
+
+def encode_secret_data(value: str) -> SecretStr:
+    return SecretStr(base64.b64encode(value.encode("utf-8")).decode("utf-8"))
+
+
+class KeyValuePairsSensitive(KeyValuePairsNonSensitive):
+    kv_pairs: Annotated[dict[str, str], AfterValidator(encode_secret_data)]
 
 
 class KeyValuePairsSecretsExtSrc(BaseModel, KeysMapper):
@@ -235,7 +261,27 @@ class SimpleHttpApplication(DeploydocusComponent):
         description="The fully tagged image to run. Something like "
         "'gcr.io/kaniko-project/executor:v1.23.2'"
     )
-    app_config_nonsecrets: KeyValuePairsNonSecrets | None = Field(
+    app_command: Optional[list[str]] = Field(
+        None,
+        description="Command to run in the application container instead of the default"
+        " command. Only one of app_entrypoint_args or app_command must be "
+        "set. If you want the default container entrypoint/command to"
+        " be run, don't set either. Provide it as a string-array without spaces. So, "
+        "if the command in the container application was meant to be "
+        "'application_exec --env1=arg1 --env2=arg2', "
+        "then set this field to ['application_exec', '--env1=arg1', '--env2=arg2']",
+    )
+    app_entrypoint_args: Optional[list[str]] = Field(
+        None,
+        description="The arguments passed to container's entrypoint. Only one of "
+        "app_entrypoint_args or app_command must be set. If you want the "
+        "default container entrypoint/command to be run, don't set either."
+        "Provide it as a string-array without spaces. So, "
+        "if the args to te the container application was meant to be "
+        "'--env1=arg1 --env2=arg2', "
+        "then set this field to ['--env1=arg1', '--env2=arg2']",
+    )
+    app_config_non_sensitive: KeyValuePairsNonSensitive | None = Field(
         None,
         description="Provides (non-sensitive) configuration information for the "
         "application either as environment variables or as files mounted"
@@ -246,9 +292,8 @@ class SimpleHttpApplication(DeploydocusComponent):
         description="Provides sensitive configuration information for the application."
         " Usually it is from an external source like Vault KV engine.",
     )
-
-    replicas: int = Field(
-        1, description="Number of application instances to run in parallel."
+    replicas: int | None = Field(
+        None, description="Number of application instances to run in parallel."
     )
     http_named_ports: dict[str, int] = Field(
         default={"http": 8080, "https": 8443},
@@ -279,7 +324,7 @@ class SimpleHttpApplication(DeploydocusComponent):
     )
     service_ports: dict[str, int] = Field(
         description="Must have the same keys as the `http_named_ports` field. "
-        "Maps ports with the same name to the corresponding port numbers in the HTTP "
+        "Maps ports with the same name to the corresponding port numbers in the "
         "application container."
     )
     ingress: HttpIngressRule | None = Field(
@@ -290,8 +335,13 @@ class SimpleHttpApplication(DeploydocusComponent):
 
     @model_validator(mode="after")
     def validate_after(self: Self) -> Self:
+        assert not (self.app_entrypoint_args and self.app_command), (
+            "Both app_entrypoint_args and app_command must be not be set, at least "
+            "one should be None"
+        )
         if not self.app_name:
             self.app_name = self.__class__.__name__
+
         return self
 
     def gen_k8s_components(self) -> "K8sComponentModel":
@@ -308,7 +358,9 @@ class SimpleHttpApplication(DeploydocusComponent):
 class HttpK8sComponentsModel(K8sComponentModel):
     hl_class: SimpleHttpApplication
 
-    def render_namespaces(self) -> NamespaceSequence:
+    def render_namespaces(
+        self,
+    ) -> NamespaceSequence:
         """Since workload deployers are not expected to create namespaces (the
             namespace will be created by the cluster operator aka cluster admin),
             this just return an empty sequence.
@@ -319,7 +371,9 @@ class HttpK8sComponentsModel(K8sComponentModel):
         """
         return []
 
-    def render_resourcequotas(self) -> ResourceQuotaSequence:
+    def render_resourcequotas(
+        self,
+    ) -> ResourceQuotaSequence:
         """Since resource quotas are set by the cluster operator, application deployers
          don't have to worry about this. Override this method if you want to
 
@@ -328,44 +382,153 @@ class HttpK8sComponentsModel(K8sComponentModel):
         """
         return []
 
-    def render_configmaps(self) -> ConfigMapSequence:
+    def render_configmaps(
+        self,
+    ) -> ConfigMapSequence:
         """rendered from
 
         Returns:
 
         """
-
-        ret = self.hl_class.app_config_nonsecrets.generate_config_map(
-            annotations=self.default_selectors,
+        if self.hl_class.app_config_secrets is None:
+            return []
+        ret = cast(
+            KeyValuePairsNonSensitive, self.hl_class.app_config_non_sensitive
+        ).generate_config_map(
+            namespace=self.instance_settings.namespace,
+            labels=cast(dict[str, str], self.default_selectors),
         )
         return [ret]
 
-    def render_secrets(self) -> SecretSequence:
-        ret = self.hl_class.app_config_secrets.generate_secrets_mapping()
+    def render_secrets(
+        self,
+    ) -> SecretSequence:
+        return (
+            [self.hl_class.app_config_secrets.generate_secrets_mapping()]
+            if self.hl_class.app_config_secrets
+            else []
+        )
+
+    def render_services(
+        self,
+    ) -> ServiceSequence:
+        meta = V1ObjectMeta(
+            name=f"{self.instance_settings.name}-svc",
+            namespace=self.instance_settings.namespace,
+        )
+        ports = [
+            V1ServicePort(protocol="TCP", port=80, targetPort=port)
+            for port in self.hl_class.service_ports
+        ]
+        spec = V1ServiceSpec(
+            selector=self.default_selectors,
+            ports=ports,
+        )
+        ret = Service(
+            service_ports=self.hl_class.service_ports,
+            metadata=meta,
+            spec=spec,
+        )
         return [ret]
 
-    def render_services(self) -> ServiceSequence:
-        meta = V1ObjectMeta(name=f"{self.app_name}-svc", namespace=self.namespace)
-        ports = [V1ServicePort(protocol='TCP', port=80, targetPort=port)for port in self.hl_class.service_ports.keys()]
-        spec = V1ServiceSpec(selector=self.default_selectors, ports=ports)
-        ret = Service(metadata=self.hl_class.service_ports)
-        return [ret]
+    def render_deployments(
+        self,
+    ) -> DeploymentSequence:
+        pod_labels = self.default_labels
+        deployment_meta = V1ObjectMeta(
+            name=f"{self.instance_settings.name}-{self.pkg_name}",
+            namespace=self.instance_settings.namespace,
+            labels=pod_labels,
+        )
+        podspec = V1PodTemplateSpec(
+            metadata=V1ObjectMeta(
+                labels=pod_labels,
+            ),
+            spec=V1PodSpec(
+                automountServiceAccountToken=False,
+                serviceAccountName=f"{self.instance_settings.name}-{self.pkg_name}-sa",
+                containers=[
+                    V1Container(
+                        name=self.hl_class.app_name,
+                        image=self.hl_class.app_image,
+                        imagePullPolicy="Always",
+                        command=self.hl_class.app_command,
+                        args=self.hl_class.app_entrypoint_args,
+                        ports=[
+                            V1ContainerPort(
+                                protocol="TCP", container_port=port_no, name=port_name
+                            )
+                            for port_name, port_no in self.hl_class.http_named_ports.items()  # noqa: E501
+                        ],
+                        livenessProbe=(
+                            V1Probe(
+                                httpGet=V1HTTPGetAction(
+                                    path=self.hl_class.liveness_probe.rel_url,
+                                    port=IntstrIntOrString("http"),
+                                ),
+                                initial_delay_seoonds=self.hl_class.liveness_probe.delay_first_probe,  # noqa
+                                period_seconds=self.hl_class.liveness_probe.check_freq,
+                            )
+                            if self.hl_class.liveness_probe
+                            else None
+                        ),
+                        readinessProbe=(
+                            (
+                                V1Probe(
+                                    httpGet=V1HTTPGetAction(
+                                        path=self.hl_class.readiness_probe.rel_url,
+                                        port=IntstrIntOrString("http"),
+                                    )
+                                )
+                            )
+                            if self.hl_class.readiness_probe
+                            else None
+                        ),
+                        startupProbe=(
+                            (
+                                V1Probe(
+                                    httpGet=V1HTTPGetAction(
+                                        path=self.hl_class.startup_probe.rel_url,
+                                        port=IntstrIntOrString("http"),
+                                    )
+                                )
+                            )
+                            if self.hl_class.startup_probe
+                            else None
+                        ),
+                    )
+                ],
+            ),
+        )
+        deployment_spec = V1DeploymentSpec(
+            template=podspec,
+            replicas=self.hl_class.replicas,
+            selector=V1LabelSelector(matchLabels=self.default_selectors),
+        )
+        deploy = Deployment(metadata=deployment_meta, spec=deployment_spec)
+        return [deploy]
 
-
-    def render_deployments(self) -> DeploymentSequence:
-        return super().render_deployments()
-
-    def render_horizontalpodautoscalers(self) -> HorizontalPodAutoscalerSequence:
+    def render_horizontalpodautoscalers(
+        self,
+    ) -> HorizontalPodAutoscalerSequence:
         return super().render_horizontalpodautoscalers()
 
-    def render_jobs(self) -> JobSequence:
+    def render_jobs(
+        self,
+    ) -> JobSequence:
         return super().render_jobs()
 
-    def render_cronjobs(self) -> CronJobSequence:
+    def render_cronjobs(
+        self,
+    ) -> CronJobSequence:
         return super().render_cronjobs()
 
-    def render_ingresses(self) -> IngressSequence:
+    def render_ingresses(
+        self,
+    ) -> IngressSequence:
         return super().render_ingresses()
 
-    def render_serviceaccounts(self) -> ServiceAccountSequence:
+    def render_serviceaccounts(
+        self,
+    ) -> ServiceAccountSequence:
         return super().render_serviceaccounts()

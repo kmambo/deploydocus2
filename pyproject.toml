@@ -6,10 +6,11 @@ authors = [
     {name = "Partho Bhowmick",email = "p.s.bhowmick@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.12,<4.0"
+requires-python = ">=3.13,<4.0"
 dependencies = [
     "pydantic (>=2.10.6,<3.0.0)",
-    "kubernetes-asyncio-pydantic @ git+https://github.com/kmambo/kubernetes-pydantic-asyncio-client.git@v32.0.1",
+    "kubernetes-asyncio-pydantic @ file:///Users/partho/kubernetes-python-client-project-root/kubernetes-client-gen-upstream/output/dist/kubernetes_asyncio_pydantic-1.32.5-py3-none-any.whl",
+    "rich (>=14.0.0,<15.0.0)",
 ]
 license = "AGPL-3.0-or-later"
 classifiers = [
@@ -27,7 +28,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^6.0.1"
-mypy = "^1.15.0"
+mypy = "^1.16.0"
 flake8 = "^7.2.0"
 black = "^25.1.0"
 wheel = "^0.45.1"
@@ -36,7 +37,9 @@ flake8-pydantic = "^0.4.0"
 setuptools = "^80.8.0"
 pip = "^25.1.1"
 pytest = "^8.3.5"
-ipython = "^9.2.0"
+ipython = "^9.3.0"
+python-devtools = "^2"
+pyright = "^1.1.402"
 
 
 [tool.poetry.group.docs.dependencies]

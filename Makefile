@@ -5,6 +5,7 @@ EXAMPLE_DIR:=$(DIR)/extras/example_app_pkg
 MAKE:=make
 src_files:=$(shell find $(DIR) -type f -name '*.py')
 PYTHON:=python3
+RUNNER_CMD:=poetry run
 
 .PHONY: all name version lint git_tag example-image test docs publish
 
@@ -22,11 +23,11 @@ name: pyproject.toml
 poetry.lock: pyproject.toml
 	poetry lock
 
-lint: poetry.lock deploydocus2  tests
-	isort deploydocus2 tests #docs/source extras/simple_example_json_server/simplejsonserver/basichttp.py extras/example_app_pkg
-	black deploydocus2 tests #docs/source extras/simple_example_json_server/simplejsonserver/basichttp.py extras/example_app_pkg
-	flake8 deploydocus2 tests #docs/source extras/simple_example_json_server/simplejsonserver/basichttp.py extras/example_app_pkg
-	$(DIR)/scripts/dmypy.sh deploydocus2 tests #extras/simple_example_json_server/simplejsonserver/basichttp.py extras/example_app_pkg
+lint: poetry.lock deploydocus2 tests
+	$(RUNNER_CMD) isort deploydocus2 tests #docs/source extras/simple_example_json_server/simplejsonserver/basichttp.py extras/example_app_pkg
+	$(RUNNER_CMD) black deploydocus2 tests #docs/source extras/simple_example_json_server/simplejsonserver/basichttp.py extras/example_app_pkg
+	$(RUNNER_CMD) flake8 deploydocus2 tests #docs/source extras/simple_example_json_server/simplejsonserver/basichttp.py extras/example_app_pkg
+	$(RUNNER_CMD) $(DIR)/scripts/dmypy.sh deploydocus2 tests #extras/simple_example_json_server/simplejsonserver/basichttp.py extras/example_app_pkg
 
 sync: poetry.lock
 	poetry sync --no-root
@@ -47,7 +48,7 @@ kind-load: example-image
 	kind load docker-image python-httpserver:$(VERSION) -n deploydocus
 
 test: sync
-	PYTHONPATH=src:extras INTEGRATION=0 pytest tests
+	PYTHONPATH=src:extras INTEGRATION=0 $(RUNNER_CMD) pytest tests -v
 
 docs:
 	$(MAKE) -C docs html
