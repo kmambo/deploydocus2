@@ -29,7 +29,7 @@ from pydantic import (
 
 from deploydocus2.components.models import DeploydocusComponent
 from deploydocus2.model_partials import ConfigMap, Deployment, Secret, Service
-from deploydocus2.pkg import InstanceSettings, K8sComponentModel
+from deploydocus2.pkg import InstanceSettings, K8sComponentsModel
 from deploydocus2.types import (
     ConfigMapSequence,
     CronJobSequence,
@@ -346,7 +346,7 @@ class SimpleHttpApplication(DeploydocusComponent):
 
         return self
 
-    def gen_k8s_components(self) -> "K8sComponentModel":
+    def gen_k8s_components(self) -> "K8sComponentsModel":
         return HttpK8sComponentsModel(
             pkg_name=self.app_name,
             pkg_version=self.version,
@@ -357,7 +357,7 @@ class SimpleHttpApplication(DeploydocusComponent):
         )
 
 
-class HttpK8sComponentsModel(K8sComponentModel):
+class HttpK8sComponentsModel(K8sComponentsModel):
     hl_class: SimpleHttpApplication
 
     def render_namespaces(

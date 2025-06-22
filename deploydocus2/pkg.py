@@ -50,7 +50,7 @@ class InstanceSettings(pyd.BaseModel):
     )
 
 
-class K8sComponentModel(pyd.BaseModel):
+class K8sComponentsModel(pyd.BaseModel):
     """This is created by a Component and represents a collection of Kubernetes
     objects."""
 

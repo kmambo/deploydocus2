@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import pydantic as pyd
 
-from deploydocus2.pkg import K8sComponentModel
+from deploydocus2.pkg import K8sComponentsModel
 
 
 class DeploydocusComponent(pyd.BaseModel, ABC):
@@ -12,6 +12,6 @@ class DeploydocusComponent(pyd.BaseModel, ABC):
     """
 
     @abstractmethod
-    def gen_k8s_components(self) -> K8sComponentModel:
+    def gen_k8s_components(self) -> K8sComponentsModel:
         """Generate a"""
         ...
