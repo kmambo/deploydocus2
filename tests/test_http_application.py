@@ -57,11 +57,23 @@ def test_deployment(
     )
 
 
-def test_container(container: V1Container, application: SimpleHttpApplication):
+def test_container_image(container: V1Container, application: SimpleHttpApplication):
     assert container.image == application.app_image
+
+
+def test_container_cmd(container: V1Container, application: SimpleHttpApplication):
     assert container.command == application.app_command
+
+
+def test_container_env(container: V1Container, application: SimpleHttpApplication):
     assert not container.env
+
+
+def test_container_args(container: V1Container, application: SimpleHttpApplication):
     assert container.args == application.app_entrypoint_args
+
+
+def test_container_ports(container: V1Container, application: SimpleHttpApplication):
     port_name, port_no = next(iter(application.http_named_ports.items()))
     assert cast(list[V1ContainerPort], container.ports)[0] == V1ContainerPort(
         protocol="TCP", name=port_name, container_port=port_no
