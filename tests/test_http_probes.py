@@ -2,7 +2,7 @@ from typing import cast
 
 from kubernetes_asyncio.models import V1HTTPGetAction, V1Probe
 
-from deploydocus2.components.workloads import HttpLivenessProbe
+from deploydocus2.components.workloads import HttpLivenessProbe, HttpReadinessProbe
 
 
 def test_http_liveness_probe(
@@ -30,4 +30,19 @@ def test_http_liveness_probe(
     assert (
         cast(V1Probe, container_liveness_probe).period_seconds
         == cast(HttpLivenessProbe, http_liveness_probe).check_freq
+    )
+
+
+def test_http_readiness_probe(
+    container_readiness_probe: V1Probe, http_readiness_probe: HttpReadinessProbe
+) -> None:
+    assert "httpGet" in container_readiness_probe.to_dict()
+    assert (
+        cast(V1HTTPGetAction, container_readiness_probe.http_get).path
+        == cast(HttpLivenessProbe, http_readiness_probe).rel_url
+    )
+
+    assert (
+        cast(V1Probe, container_readiness_probe).period_seconds
+        == cast(HttpLivenessProbe, http_readiness_probe).check_freq
     )
