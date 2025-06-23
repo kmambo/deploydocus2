@@ -1,12 +1,11 @@
 from typing import Any, cast
 
 import pytest
-from kubernetes_asyncio import V1Container, V1Deployment, V1HTTPGetAction, V1Probe
+from kubernetes_asyncio import V1Container, V1Deployment
 
 from deploydocus2.components.models import DeploydocusComponent
 from deploydocus2.components.workloads.httpapps import (
     HttpK8sComponentsModel,
-    HttpLivenessProbe,
     SimpleHttpApplication,
 )
 from deploydocus2.pkg import K8sComponentsModel
@@ -50,23 +49,3 @@ def test_container(container: V1Container, application: SimpleHttpApplication):
     assert container.command == application.app_command
     assert not container.env
     assert container.args == application.app_entrypoint_args
-    assert (
-        not (application.liveness_probe or container.liveness_probe)
-        if application.liveness_probe is None
-        else (
-            application.liveness_probe.delay_first_probe
-            == cast(V1Probe, container.liveness_probe).initial_delay_seconds
-        )
-    )
-    liveness_probe = cast(V1Probe, container.liveness_probe)
-
-    assert "httpGet" in liveness_probe.to_dict()
-    assert (
-        liveness_probe.initial_delay_seconds is None
-        and cast(HttpLivenessProbe, application.liveness_probe).delay_first_probe
-        is None
-    )
-    assert (
-        cast(V1HTTPGetAction, liveness_probe.http_get).path
-        == cast(HttpLivenessProbe, application.liveness_probe).rel_url
-    )

@@ -2,7 +2,13 @@ from typing import cast
 from unittest.mock import Mock
 
 import pytest
-from kubernetes_asyncio import V1Container
+from kubernetes_asyncio import (
+    V1Container,
+    V1Deployment,
+    V1DeploymentSpec,
+    V1PodSpec,
+    V1Probe,
+)
 
 from deploydocus2.components.workloads.httpapps import (
     HttpIngressRule,
@@ -81,6 +87,19 @@ def http_k8s_component(application: SimpleHttpApplication) -> HttpK8sComponentsM
 @pytest.fixture
 def container(http_k8s_component: HttpK8sComponentsModel) -> V1Container:
     return cast(
-        V1Container,
-        http_k8s_component.render_deployments()[0].spec.template.spec.containers[0],
-    )
+        V1PodSpec,
+        cast(
+            V1DeploymentSpec,
+            cast(V1Deployment, http_k8s_component.render_deployments()[0]).spec,
+        ).template.spec,
+    ).containers[0]
+
+
+@pytest.fixture
+def container_liveness_probe(container: V1Container) -> V1Probe:
+    return cast(V1Probe, container.liveness_probe)
+
+
+@pytest.fixture
+def http_liveness_probe(application: SimpleHttpApplication) -> HttpLivenessProbe:
+    return cast(HttpLivenessProbe, application.liveness_probe)
