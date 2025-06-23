@@ -3,6 +3,7 @@ from typing import cast
 import pytest
 from kubernetes_asyncio import (
     V1Container,
+    V1ContainerPort,
     V1Deployment,
     V1DeploymentSpec,
     V1ObjectMeta,
@@ -61,3 +62,7 @@ def test_container(container: V1Container, application: SimpleHttpApplication):
     assert container.command == application.app_command
     assert not container.env
     assert container.args == application.app_entrypoint_args
+    port_name, port_no = next(iter(application.http_named_ports.items()))
+    assert cast(list[V1ContainerPort], container.ports)[0] == V1ContainerPort(
+        protocol="TCP", name=port_name, container_port=port_no
+    )

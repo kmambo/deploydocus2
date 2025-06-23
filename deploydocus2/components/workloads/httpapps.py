@@ -298,7 +298,9 @@ class SimpleHttpApplication(DeploydocusComponent):
         None, description="Number of application instances to run in parallel."
     )
     http_named_ports: dict[str, int] = Field(
-        default={"http": 8080, "https": 8443},
+        default={
+            "http": 8080,
+        },
         description=r"The ports used by the application's container. e.g. "
         r"{'http': 8080, 'https': 8443}. Neither port names nor their "
         r"corresponding port numbers can be repeated.",
