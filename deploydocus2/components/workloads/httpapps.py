@@ -309,7 +309,8 @@ class SimpleHttpApplication(DeploydocusComponent):
     # container probes
     startup_probe: HttpStartupProbe | None = Field(
         None,
-        description="Use only for slow starting containers. It disables liveness and "
+        description="Most HTTP microservices don't need this."
+        "Use only for slow starting containers. It disables liveness and "
         "readiness checks until it succeeds.",
     )
     liveness_probe: Optional[HttpLivenessProbe] = Field(

@@ -15,6 +15,7 @@ from deploydocus2.components.workloads.httpapps import (
     HttpK8sComponentsModel,
     HttpLivenessProbe,
     HttpReadinessProbe,
+    HttpStartupProbe,
     KeyValuePairsNonSensitive,
     KeyValuePairsSecretsExtSrc,
     SimpleHttpApplication,
@@ -120,3 +121,13 @@ def container_readiness_probe(container: V1Container) -> V1Probe:
 @pytest.fixture
 def http_readiness_probe(application: SimpleHttpApplication) -> HttpLivenessProbe:
     return cast(HttpLivenessProbe, application.readiness_probe)
+
+
+@pytest.fixture
+def container_startup_probe(container: V1Container) -> V1Probe | None:
+    return container.startup_probe
+
+
+@pytest.fixture
+def http_startup_probe(application: SimpleHttpApplication) -> HttpStartupProbe | None:
+    return application.startup_probe
