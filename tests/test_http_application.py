@@ -1,7 +1,13 @@
-from typing import Any, cast
+from typing import cast
 
 import pytest
-from kubernetes_asyncio import V1Container, V1Deployment
+from kubernetes_asyncio import (
+    V1Container,
+    V1Deployment,
+    V1DeploymentSpec,
+    V1ObjectMeta,
+    V1PodSpec,
+)
 
 from deploydocus2.components.models import DeploydocusComponent
 from deploydocus2.components.workloads.httpapps import (
@@ -20,28 +26,34 @@ def test_render_namespace(http_k8s_component: K8sComponentsModel):
     assert http_k8s_component.render_namespaces() == []
 
 
-def test_render_deployment(
-    application: SimpleHttpApplication, http_k8s_component: HttpK8sComponentsModel
+def test_deployment(
+    application: SimpleHttpApplication,
+    deployment: V1Deployment,
+    http_k8s_component: HttpK8sComponentsModel,
 ):
-    component: V1Deployment = cast(
-        V1Deployment, http_k8s_component.render_deployments()[0]
+    deployment_metadata = cast(V1ObjectMeta, deployment.metadata)
+    assert cast(str, deployment_metadata.name) == (
+        f"{http_k8s_component.instance_settings.name}-"
+        f"{cast(str, http_k8s_component.hl_class.app_name)}"
     )
-    deployment_dict = component.to_dict()
-    assert isinstance(component, V1Deployment)
-    assert deployment_dict["metadata"] == {
-        "name": f"{http_k8s_component.instance_settings.name}-"
-        f"{http_k8s_component.hl_class.app_name}",
-        "labels": http_k8s_component.default_labels,
-        "namespace": http_k8s_component.instance_settings.namespace,
-    }
-    deployment_spec: dict[str, Any] = deployment_dict["spec"]
+    assert deployment_metadata.labels == http_k8s_component.default_labels
+    assert (
+        cast(str, deployment_metadata.namespace)
+        == http_k8s_component.instance_settings.namespace
+    )
+    deployment_spec = cast(V1DeploymentSpec, deployment.spec)
     # only if there are no additional labels
-    pod_template: dict[str, Any] = deployment_spec["template"]
-    pod_spec: dict[str, Any] = pod_template["spec"]
-    deployment_selector: dict = deployment_spec["selector"]["matchLabels"]
-    pod_template_labels: dict = deployment_spec["template"]["metadata"]["labels"]
+    pod_template = deployment_spec.template
+    pod_spec = cast(V1PodSpec, pod_template.spec)
+    deployment_selector = deployment_spec.selector.match_labels or {}
+    pod_template_labels = (
+        cast(V1ObjectMeta, deployment_spec.template.metadata).labels or {}
+    )
     assert deployment_selector.items() <= pod_template_labels.items()
-    assert pod_spec["serviceAccountName"] == f"{deployment_dict['metadata']['name']}-sa"
+    assert (
+        cast(str, pod_spec.service_account_name)
+        == f"{cast(str, deployment_metadata.name)}-sa"
+    )
 
 
 def test_container(container: V1Container, application: SimpleHttpApplication):

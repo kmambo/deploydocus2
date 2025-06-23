@@ -85,6 +85,13 @@ def http_k8s_component(application: SimpleHttpApplication) -> HttpK8sComponentsM
 
 
 @pytest.fixture
+def deployment(
+    http_k8s_component: HttpK8sComponentsModel,
+) -> V1Deployment:
+    return cast(V1Deployment, http_k8s_component.render_deployments()[0])
+
+
+@pytest.fixture
 def container(http_k8s_component: HttpK8sComponentsModel) -> V1Container:
     return cast(
         V1PodSpec,
