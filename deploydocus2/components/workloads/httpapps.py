@@ -247,6 +247,7 @@ class SimpleHttpApplication(DeploydocusComponent):
         "long because it forms the basis of other kubernetes "
         "objects' names such deployments and services and they "
         "may become too long and fail to be created.",
+        validate_default=True,
     )
     instance_name: str | None = Field(
         None,
@@ -254,6 +255,7 @@ class SimpleHttpApplication(DeploydocusComponent):
         "deploy another instance of the same application in the same "
         "namespace. Otherwise it gets set automatically to be the same as "
         "`app_name`.",
+        validate_default=True,
     )
     version: str = Field(description="A semver-ed version number.")
     namespace: str = Field(
@@ -295,7 +297,10 @@ class SimpleHttpApplication(DeploydocusComponent):
         " Usually it is from an external source like Vault KV engine.",
     )
     replicas: int | None = Field(
-        None, description="Number of application instances to run in parallel."
+        None,
+        description="Number of application instances to run in parallel. "
+        "If left unset, a single replica will be created. (This field itself will be "
+        "None). ",
     )
     http_named_ports: dict[str, int] = Field(
         default={
@@ -346,6 +351,8 @@ class SimpleHttpApplication(DeploydocusComponent):
         )
         if not self.app_name:
             self.app_name = self.__class__.__name__
+        if not self.instance_name:
+            self.instance_name = self.app_name
 
         return self
 
@@ -354,7 +361,7 @@ class SimpleHttpApplication(DeploydocusComponent):
             pkg_name=self.app_name,
             pkg_version=self.version,
             instance_settings=InstanceSettings(
-                name=self.instance_name, namespace=self.namespace
+                name=f"{self.instance_name}-{self.app_name}", namespace=self.namespace
             ),
             hl_class=self,
         )
@@ -422,7 +429,7 @@ class HttpK8sComponentsModel(K8sComponentsModel):
             namespace=self.instance_settings.namespace,
         )
         ports = [
-            V1ServicePort(protocol="TCP", port=80, targetPort=port)
+            V1ServicePort(protocol="TCP", port=80, target_port=IntstrIntOrString(port))
             for port in self.hl_class.service_ports
         ]
         spec = V1ServiceSpec(

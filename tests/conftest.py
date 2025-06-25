@@ -8,6 +8,7 @@ from kubernetes_asyncio import (
     V1DeploymentSpec,
     V1PodSpec,
     V1Probe,
+    V1Service,
 )
 
 from deploydocus2.components.workloads.httpapps import (
@@ -20,7 +21,6 @@ from deploydocus2.components.workloads.httpapps import (
     KeyValuePairsSecretsExtSrc,
     SimpleHttpApplication,
 )
-from deploydocus2.pkg import InstanceSettings
 
 
 @pytest.fixture
@@ -74,15 +74,7 @@ def application(
 
 @pytest.fixture
 def http_k8s_component(application: SimpleHttpApplication) -> HttpK8sComponentsModel:
-    return HttpK8sComponentsModel(
-        hl_class=application,
-        pkg_name=application.app_name,
-        pkg_version=application.version,
-        instance_settings=InstanceSettings(
-            name="inst1",
-            namespace="test-ns",
-        ),
-    )
+    return cast(HttpK8sComponentsModel, application.gen_k8s_components())
 
 
 @pytest.fixture
@@ -131,3 +123,8 @@ def container_startup_probe(container: V1Container) -> V1Probe | None:
 @pytest.fixture
 def http_startup_probe(application: SimpleHttpApplication) -> HttpStartupProbe | None:
     return application.startup_probe
+
+
+@pytest.fixture
+def svc(http_k8s_component: HttpK8sComponentsModel) -> V1Service:
+    return cast(V1Service, http_k8s_component.render_services()[0])
