@@ -18,8 +18,8 @@ from .types import (
     HorizontalPodAutoscalerSequence,
     IngressSequence,
     JobSequence,
+    K8sModelSequence,
     LimitRangeSequence,
-    ManifestSequence,
     NamespaceSequence,
     NetworkPolicySequence,
     PersistentVolumeClaimSequence,
@@ -384,13 +384,13 @@ class K8sComponentsModel(pyd.BaseModel):
 
         return []
 
-    def render(self) -> ManifestSequence:
+    def render(self) -> K8sModelSequence:
         """Renders the Kubernetes manifests for the application
 
         Returns:
 
         """
-        manifests: ManifestSequence = reduce(
+        manifests: K8sModelSequence = reduce(
             concat,
             [
                 self.render_namespaces(),

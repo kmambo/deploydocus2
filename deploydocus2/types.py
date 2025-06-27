@@ -1,6 +1,6 @@
 from collections import OrderedDict
 from collections.abc import Sequence
-from typing import Any, Mapping, Union
+from typing import Union
 
 from kubernetes_asyncio.models import (  # type: ignore[import-untyped]
     V1APIService,
@@ -78,49 +78,39 @@ SUPPORTED_KINDS: OrderedDict[str, str] = OrderedDict(
 
 SUPPORTED_KUBERNETES_KINDS: list[str] = list(SUPPORTED_KINDS.keys())
 
-type NamespaceSequence = Sequence[Mapping[str, Any] | V1Namespace]
-type NetworkPolicySequence = Sequence[Mapping[str, Any] | V1NetworkPolicy]
-type ResourceQuotaSequence = Sequence[Mapping[str, Any] | V1ResourceQuota]
-type LimitRangeSequence = Sequence[Mapping[str, Any] | V1LimitRange]
-type PodDisruptionBudgetSequence = Sequence[Mapping[str, Any] | V1PodDisruptionBudget]
-type ServiceAccountSequence = Sequence[Mapping[str, Any] | V1ServiceAccount]
-type SecretSequence = Sequence[Mapping[str, Any] | V1Secret]
-type SecretListSequence = Sequence[Mapping[str, Any] | V1SecretList]
-type ConfigMapSequence = Sequence[Mapping[str, Any] | V1ConfigMap]
-type StorageClassSequence = Sequence[Mapping[str, Any] | V1StorageClass]
-type PersistentVolumeSequence = Sequence[Mapping[str, Any] | V1PersistentVolume]
-type PersistentVolumeClaimSequence = Sequence[
-    Mapping[str, Any] | V1PersistentVolumeClaim
-]
-type CustomResourceDefinitionSequence = Sequence[
-    Mapping[str, Any] | V1CustomResourceDefinition
-]
-type ClusterRoleSequence = Sequence[Mapping[str, Any] | V1ClusterRole]
-type ClusterRoleListSequence = Sequence[Mapping[str, Any] | V1ClusterRoleList]
-type ClusterRoleBindingSequence = Sequence[Mapping[str, Any] | V1ClusterRoleBinding]
-type ClusterRoleBindingListSequence = Sequence[
-    Mapping[str, Any] | V1ClusterRoleBindingList
-]
-type RoleSequence = Sequence[Mapping[str, Any] | V1Role]
-type RoleListSequence = Sequence[Mapping[str, Any] | V1RoleList]
-type RoleBindingSequence = Sequence[Mapping[str, Any] | V1RoleBinding]
-type RoleBindingListSequence = Sequence[Mapping[str, Any] | V1RoleBindingList]
-type ServiceSequence = Sequence[Mapping[str, Any] | V1Service]
-type DaemonSetSequence = Sequence[Mapping[str, Any] | V1DaemonSet]
-type PodSequence = Sequence[Mapping[str, Any] | V1Pod]
-type ReplicationControllerSequence = Sequence[
-    Mapping[str, Any] | V1ReplicationController
-]
-type ReplicaSetSequence = Sequence[Mapping[str, Any] | V1ReplicaSet]
-type DeploymentSequence = Sequence[Mapping[str, Any] | V1Deployment]
-type HorizontalPodAutoscalerSequence = Sequence[
-    Mapping[str, Any] | V2HorizontalPodAutoscaler
-]
-type StatefulSetSequence = Sequence[Mapping[str, Any] | V1StatefulSet]
-type JobSequence = Sequence[Mapping[str, Any] | V1Job]
-type CronJobSequence = Sequence[Mapping[str, Any] | V1CronJob]
-type IngressSequence = Sequence[Mapping[str, Any] | V1Ingress]
-type APIServiceSequence = Sequence[Mapping[str, Any] | V1APIService]
+type NamespaceSequence = Sequence[V1Namespace]
+type NetworkPolicySequence = Sequence[V1NetworkPolicy]
+type ResourceQuotaSequence = Sequence[V1ResourceQuota]
+type LimitRangeSequence = Sequence[V1LimitRange]
+type PodDisruptionBudgetSequence = Sequence[V1PodDisruptionBudget]
+type ServiceAccountSequence = Sequence[V1ServiceAccount]
+type SecretSequence = Sequence[V1Secret]
+type SecretListSequence = Sequence[V1SecretList]
+type ConfigMapSequence = Sequence[V1ConfigMap]
+type StorageClassSequence = Sequence[V1StorageClass]
+type PersistentVolumeSequence = Sequence[V1PersistentVolume]
+type PersistentVolumeClaimSequence = Sequence[V1PersistentVolumeClaim]
+type CustomResourceDefinitionSequence = Sequence[V1CustomResourceDefinition]
+type ClusterRoleSequence = Sequence[V1ClusterRole]
+type ClusterRoleListSequence = Sequence[V1ClusterRoleList]
+type ClusterRoleBindingSequence = Sequence[V1ClusterRoleBinding]
+type ClusterRoleBindingListSequence = Sequence[V1ClusterRoleBindingList]
+type RoleSequence = Sequence[V1Role]
+type RoleListSequence = Sequence[V1RoleList]
+type RoleBindingSequence = Sequence[V1RoleBinding]
+type RoleBindingListSequence = Sequence[V1RoleBindingList]
+type ServiceSequence = Sequence[V1Service]
+type DaemonSetSequence = Sequence[V1DaemonSet]
+type PodSequence = Sequence[V1Pod]
+type ReplicationControllerSequence = Sequence[V1ReplicationController]
+type ReplicaSetSequence = Sequence[V1ReplicaSet]
+type DeploymentSequence = Sequence[V1Deployment]
+type HorizontalPodAutoscalerSequence = Sequence[V2HorizontalPodAutoscaler]
+type StatefulSetSequence = Sequence[V1StatefulSet]
+type JobSequence = Sequence[V1Job]
+type CronJobSequence = Sequence[V1CronJob]
+type IngressSequence = Sequence[V1Ingress]
+type APIServiceSequence = Sequence[V1APIService]
 
 type K8sModel = Union[
     V1APIService,
@@ -161,6 +151,3 @@ K8sListModel = Union[
 ]
 
 K8sModelSequence = Sequence[K8sModel]
-# TODO: Deprecate the ones below
-K8sManifest = Mapping[str, Any] | K8sModel
-ManifestSequence = Sequence[K8sManifest]
