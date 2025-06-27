@@ -43,9 +43,9 @@ pyright = "^1.1.402"
 
 
 [tool.poetry.group.docs.dependencies]
-sphinx = "^8.2.3"
 mkdocs = "^1.6.1"
 mkdocs-material = "^9.6.7"
+mkdocstrings = {version = ">=0.18", extras = ["python"]}
 
 
 [tool.poetry.group.test.dependencies]

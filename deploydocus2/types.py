@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from collections.abc import Sequence
 from typing import Union
 
@@ -37,46 +36,6 @@ from kubernetes_asyncio.models import (  # type: ignore[import-untyped]
     V1StorageClass,
     V2HorizontalPodAutoscaler,
 )
-
-SUPPORTED_KINDS: OrderedDict[str, str] = OrderedDict(
-    [
-        ("Namespace", "v1"),
-        ("NetworkPolicy", "networking.k8s.io/v1"),
-        ("ResourceQuota", "v1"),
-        ("LimitRange", "v1"),
-        ("PodDisruptionBudget", "policy/v1"),
-        ("ServiceAccount", "v1"),
-        ("Secret", "v1"),
-        ("SecretList", "v1"),
-        ("ConfigMap", "v1"),
-        ("StorageClass", "storage.k8s.io/v1"),
-        ("PersistentVolume", "v1"),
-        ("PersistentVolumeClaim", "v1"),
-        ("CustomResourceDefinition", "apiextensions.k8s.io/v1"),
-        ("ClusterRole", "rbac.authorization.k8s.io/v1"),
-        ("ClusterRoleList", "rbac.authorization.k8s.io/v1"),
-        ("ClusterRoleBinding", "rbac.authorization.k8s.io/v1"),
-        ("ClusterRoleBindingList", "rbac.authorization.k8s.io/v1"),
-        ("Role", "rbac.authorization.k8s.io/v1"),
-        ("RoleList", "rbac.authorization.k8s.io/v1"),
-        ("RoleBinding", "rbac.authorization.k8s.io/v1"),
-        ("RoleBindingList", "rbac.authorization.k8s.io/v1"),
-        ("Service", "v1"),
-        ("DaemonSet", "apps/v1"),
-        ("Pod", "v1"),
-        ("ReplicationController", "v1"),
-        ("ReplicaSet", "apps/v1"),
-        ("Deployment", "apps/v1"),
-        ("HorizontalPodAutoscaler", "autoscaling/v2"),
-        ("StatefulSet", "apps/v1"),
-        ("Job", "batch/v1"),
-        ("CronJob", "batch/v1"),
-        ("Ingress", "networking.k8s.io/v1"),
-        ("APIService", "apiregistration.k8s.io/v1"),
-    ]
-)
-
-SUPPORTED_KUBERNETES_KINDS: list[str] = list(SUPPORTED_KINDS.keys())
 
 type NamespaceSequence = Sequence[V1Namespace]
 type NetworkPolicySequence = Sequence[V1NetworkPolicy]
