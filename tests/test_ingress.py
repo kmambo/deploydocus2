@@ -1,6 +1,12 @@
 from typing import cast
 
-from kubernetes_asyncio import V1Ingress, V1IngressRule, V1IngressSpec, V1Service
+from kubernetes_asyncio import (
+    V1HTTPIngressRuleValue,
+    V1Ingress,
+    V1IngressRule,
+    V1IngressSpec,
+    V1Service,
+)
 
 from deploydocus2.components.workloads import SimpleHttpApplication
 
@@ -16,15 +22,15 @@ def test_ingress_exposed(
     )
     assert v1_ingress_rules is not None and len(v1_ingress_rules) == 1
     assert v1_ingress_rules[0].host is not None
+
     assert len(hl_ingress.rules) == len(
         [
             rule
-            for rule in ingress.spec.rules
+            for rule in cast(list[V1IngressRule], v1_ingress_rules)
             if rule.host is not None and rule.host == hl_ingress.host
         ]
     )
-    assert hl_ingress.host == ingress.spec.rules[0].host
-    assert (
-        hl_ingress.rules[0].path_type == ingress.spec.rules[0].http.paths[0].path_type
-    )
-    assert hl_ingress.rules[0].path == ingress.spec.rules[0].http.paths[0].path
+    assert hl_ingress.host == v1_ingress_rules[0].host
+    v1_http_ingress_rule_val = cast(V1HTTPIngressRuleValue, v1_ingress_rules[0].http)
+    assert hl_ingress.rules[0].path_type == v1_http_ingress_rule_val.paths[0].path_type
+    assert hl_ingress.rules[0].path == v1_http_ingress_rule_val.paths[0].path

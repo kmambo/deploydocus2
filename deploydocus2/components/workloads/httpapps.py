@@ -2,7 +2,6 @@ import abc
 import base64
 import enum
 from collections.abc import Mapping
-from functools import cache
 from pathlib import Path
 from typing import Annotated, Callable, Optional, Self, Sequence, cast
 
@@ -124,7 +123,7 @@ class HttpIngressHostWithRules(BaseModel):
         description="Set to None regardless of the `Host` "
         "header in the incoming HTTP request",
     )
-    ingress_class_name: str = Field(
+    ingress_class_name: str | None = Field(
         default=None,
         description="(Recommended) The name of the ingress class. Leave it at None if "
         "you want to use the default class. The application developer is "
