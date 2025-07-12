@@ -6,12 +6,14 @@ from kubernetes_asyncio import (
     V1Container,
     V1Deployment,
     V1DeploymentSpec,
+    V1Ingress,
     V1PodSpec,
     V1Probe,
     V1Service,
 )
 
 from deploydocus2.components.workloads.httpapps import (
+    HttpIngressHostWithRules,
     HttpIngressRule,
     HttpK8sComponentsModel,
     HttpLivenessProbe,
@@ -19,6 +21,7 @@ from deploydocus2.components.workloads.httpapps import (
     HttpStartupProbe,
     KeyValuePairsNonSensitive,
     KeyValuePairsSecretsExtSrc,
+    RuleType,
     SimpleHttpApplication,
 )
 
@@ -62,11 +65,10 @@ def application(
         readiness_probe=HttpReadinessProbe(rel_url="/readyz"),
         app_config_non_sensitive=app_config_nonsensitive_mock,
         app_config_secrets=app_config_sensitive_mock,
-        ingress=HttpIngressRule(
+        ingress=HttpIngressHostWithRules(
             host="api.mytestapp.app",
-            path="/api/*",
             ingress_class_name="nginx",
-            implementation_specific=True,
+            rules=[HttpIngressRule(path="/api", path_type=RuleType.PREFIX)],
         ),
         service_ports={"http": 8080},
     )
@@ -128,3 +130,8 @@ def http_startup_probe(application: SimpleHttpApplication) -> HttpStartupProbe |
 @pytest.fixture
 def svc(http_k8s_component: HttpK8sComponentsModel) -> V1Service:
     return cast(V1Service, http_k8s_component.render_services()[0])
+
+
+@pytest.fixture
+def ingress(http_k8s_component: HttpK8sComponentsModel) -> V1Ingress:
+    return cast(V1Ingress, http_k8s_component.render_ingresses()[0])

@@ -2,9 +2,18 @@ import abc
 import base64
 import enum
 from collections.abc import Mapping
+from functools import cache
 from pathlib import Path
-from typing import Annotated, Callable, Optional, Self, cast
+from typing import Annotated, Callable, Optional, Self, Sequence, cast
 
+from kubernetes_asyncio import (
+    V1HTTPIngressPath,
+    V1HTTPIngressRuleValue,
+    V1IngressBackend,
+    V1IngressRule,
+    V1IngressServiceBackend,
+    V1IngressSpec,
+)
 from kubernetes_asyncio.models import (
     IntstrIntOrString,
     V1Container,
@@ -28,7 +37,7 @@ from pydantic import (
 )
 
 from deploydocus2.components.models import DeploydocusComponent
-from deploydocus2.model_partials import ConfigMap, Deployment, Secret, Service
+from deploydocus2.model_partials import ConfigMap, Deployment, Ingress, Secret, Service
 from deploydocus2.pkg import InstanceSettings, K8sComponentsModel
 from deploydocus2.types import (
     ConfigMapSequence,
@@ -90,33 +99,46 @@ class HttpStartupProbe(HttpProbe, default_url="/startz"):
 
 
 class RuleType(enum.StrEnum):
-    prefix = "Prefix"
-    exact = "Exact"
-    implementation_specific = "ImplementationSpecific"
+    PREFIX = "Prefix"
+    EXACT = "Exact"
+    IMPLEMENTATION_SPECIFIC = "ImplementationSpecific"
 
 
 class HttpIngressRule(BaseModel):
     """Represents a HTTP route matching rule. For a route to match, both the host
     field and path fields must 'match'."""
 
-    host: str | None = Field(
-        None,
-        description="Set to None regardless of the `Host` "
-        "header in the incoming HTTP request",
-    )
     path: str = Field(
         description="For a prefix matching, must end with a /* . "
         "Otherwise assumed to be an exact match. "
         "See docs for examples"
     )
-    implementation_specific: bool = Field(
-        default=False, description="Set to True if you want the path rule to "
+    path_type: RuleType = Field(
+        default=RuleType.PREFIX, description="The type of path match. "
     )
-    ingress_class_name: str | None = Field(
+
+
+class HttpIngressHostWithRules(BaseModel):
+    host: str | None = Field(
+        None,
+        description="Set to None regardless of the `Host` "
+        "header in the incoming HTTP request",
+    )
+    ingress_class_name: str = Field(
         default=None,
-        description="The name of the ingress class. Leave it at None if you want to use"
-        " the default class. Unless ",
+        description="(Recommended) The name of the ingress class. Leave it at None if "
+        "you want to use the default class. The application developer is "
+        "not expected to setup the Ingress class, that is the cluster "
+        "operator's burden.",
     )
+    rules: Sequence[HttpIngressRule] = Field(
+        description="Set of rules to match against the host."
+    )
+
+    @model_validator(mode="after")
+    def model_validate_after(self) -> Self:
+        assert self.rules
+        return self
 
 
 def mk_upper_case(key: str) -> str:
@@ -337,10 +359,12 @@ class SimpleHttpApplication(DeploydocusComponent):
         "Maps ports with the same name to the corresponding port numbers in the "
         "application container."
     )
-    ingress: HttpIngressRule | None = Field(
+    ingress: HttpIngressHostWithRules | None = Field(
         None,
-        description="A single HTTP routing rule. Set to None if you don't "
-        "need to expose this to the internet",
+        description="A single HTTP host with routing rules. Set to None if you don't "
+        "need to expose this application to the internet. See "
+        "https://kubernetes.io/docs/concepts/services-networking/ingress"
+        "/#single-service-ingress",
     )
 
     @model_validator(mode="after")
@@ -463,7 +487,7 @@ class HttpK8sComponentsModel(K8sComponentsModel):
                     V1Container(
                         name=self.hl_class.app_name,
                         image=self.hl_class.app_image,
-                        imagePullPolicy="Always",
+                        image_pull_policy="Always",
                         command=self.hl_class.app_command,
                         args=self.hl_class.app_entrypoint_args,
                         ports=[
@@ -472,7 +496,7 @@ class HttpK8sComponentsModel(K8sComponentsModel):
                             )
                             for port_name, port_no in self.hl_class.http_named_ports.items()  # noqa: E501
                         ],
-                        livenessProbe=(
+                        liveness_probe=(
                             V1Probe(
                                 httpGet=V1HTTPGetAction(
                                     path=self.hl_class.liveness_probe.rel_url,
@@ -484,7 +508,7 @@ class HttpK8sComponentsModel(K8sComponentsModel):
                             if self.hl_class.liveness_probe
                             else None
                         ),
-                        readinessProbe=(
+                        readiness_probe=(
                             (
                                 V1Probe(
                                     httpGet=V1HTTPGetAction(
@@ -496,7 +520,7 @@ class HttpK8sComponentsModel(K8sComponentsModel):
                             if self.hl_class.readiness_probe
                             else None
                         ),
-                        startupProbe=(
+                        startup_probe=(
                             (
                                 V1Probe(
                                     httpGet=V1HTTPGetAction(
@@ -538,7 +562,46 @@ class HttpK8sComponentsModel(K8sComponentsModel):
     def render_ingresses(
         self,
     ) -> IngressSequence:
-        return super().render_ingresses()
+        if not self.hl_class.ingress:
+            return []
+        else:
+            svc_backend = self.render_services()[0]
+            return [
+                Ingress(
+                    metadata=V1ObjectMeta(
+                        namespace=self.instance_settings.namespace,
+                        name=f"{self.instance_settings.name}-{self.pkg_name}-ingress",
+                    ),
+                    spec=V1IngressSpec(
+                        rules=[
+                            V1IngressRule(
+                                host=self.hl_class.ingress.host,
+                                http=V1HTTPIngressRuleValue(
+                                    paths=[
+                                        V1HTTPIngressPath(
+                                            path_type=r.path_type.value,
+                                            path=r.path,
+                                            backend=V1IngressBackend(
+                                                service=V1IngressServiceBackend(
+                                                    name=cast(
+                                                        str,
+                                                        cast(
+                                                            V1ObjectMeta,
+                                                            svc_backend.metadata,
+                                                        ).name,
+                                                    )
+                                                )
+                                            ),
+                                        )
+                                        for r in (self.hl_class.ingress.rules or [])
+                                    ]
+                                ),
+                            )
+                        ],
+                        ingress_class_name=self.hl_class.ingress.ingress_class_name,
+                    ),
+                )
+            ]
 
     def render_serviceaccounts(
         self,
