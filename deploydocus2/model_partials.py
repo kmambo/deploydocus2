@@ -1,240 +1,398 @@
-from typing import Any
-
 from kubernetes_asyncio import models
+from pydantic import Field, StrictStr
 
 
 class Namespace(models.V1Namespace):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="v1", kind="Namespace")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="Namespace",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class NetworkPolicy(models.V1NetworkPolicy):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="networking.k8s.io/v1", kind="NetworkPolicy")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="networking.k8s.io/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="NetworkPolicy",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class ResourceQuota(models.V1ResourceQuota):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="v1", kind="ResourceQuota")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="ResourceQuota",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class LimitRange(models.V1LimitRange):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="v1", kind="LimitRange")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="LimitRange",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class PodDisruptionBudget(models.V1PodDisruptionBudget):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="policy/v1", kind="PodDisruptionBudget")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="policy/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="PodDisruptionBudget",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class ServiceAccount(models.V1ServiceAccount):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="v1", kind="ServiceAccount")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="ServiceAccount",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class Secret(models.V1Secret):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="v1", kind="Secret")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="Secret",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class SecretList(models.V1SecretList):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="v1", kind="SecretList")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="SecretList",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class ConfigMap(models.V1ConfigMap):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="v1", kind="ConfigMap")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="ConfigMap",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class StorageClass(models.V1StorageClass):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="storage.k8s.io/v1", kind="StorageClass")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="storage.k8s.io/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="StorageClass",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class PersistentVolume(models.V1PersistentVolume):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="v1", kind="PersistentVolume")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="PersistentVolume",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class PersistentVolumeClaim(models.V1PersistentVolumeClaim):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="v1", kind="PersistentVolumeClaim")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="PersistentVolumeClaim",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class CustomResourceDefinition(models.V1CustomResourceDefinition):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(
-            api_version="apiextensions.k8s.io/v1", kind="CustomResourceDefinition"
-        )
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="apiextensions.k8s.io/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="CustomResourceDefinition",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class ClusterRole(models.V1ClusterRole):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="rbac.authorization.k8s.io/v1", kind="ClusterRole")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="rbac.authorization.k8s.io/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="ClusterRole",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class ClusterRoleList(models.V1ClusterRoleList):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="rbac.authorization.k8s.io/v1", kind="ClusterRoleList")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="rbac.authorization.k8s.io/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="ClusterRoleList",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class ClusterRoleBinding(models.V1ClusterRoleBinding):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(
-            api_version="rbac.authorization.k8s.io/v1", kind="ClusterRoleBinding"
-        )
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="rbac.authorization.k8s.io/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="ClusterRoleBinding",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class ClusterRoleBindingList(models.V1ClusterRoleBindingList):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(
-            api_version="rbac.authorization.k8s.io/v1", kind="ClusterRoleBindingList"
-        )
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="rbac.authorization.k8s.io/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="ClusterRoleBindingList",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class Role(models.V1Role):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="rbac.authorization.k8s.io/v1", kind="Role")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="rbac.authorization.k8s.io/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="Role",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class RoleList(models.V1RoleList):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="rbac.authorization.k8s.io/v1", kind="RoleList")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="rbac.authorization.k8s.io/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="RoleList",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class RoleBinding(models.V1RoleBinding):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="rbac.authorization.k8s.io/v1", kind="RoleBinding")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="rbac.authorization.k8s.io/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="RoleBinding",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class RoleBindingList(models.V1RoleBindingList):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="rbac.authorization.k8s.io/v1", kind="RoleBindingList")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="rbac.authorization.k8s.io/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="RoleBindingList",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class Service(models.V1Service):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="v1", kind="Service")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="Service",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class DaemonSet(models.V1DaemonSet):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="apps/v1", kind="DaemonSet")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="apps/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="DaemonSet",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class Pod(models.V1Pod):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="v1", kind="Pod")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="Pod",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class ReplicationController(models.V1ReplicationController):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="v1", kind="ReplicationController")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="ReplicationController",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class ReplicaSet(models.V1ReplicaSet):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="apps/v1", kind="ReplicaSet")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="apps/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="ReplicaSet",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class Deployment(models.V1Deployment):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="apps/v1", kind="Deployment")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="apps/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="Deployment",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class HorizontalPodAutoscaler(models.V2HorizontalPodAutoscaler):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="autoscaling/v2", kind="HorizontalPodAutoscaler")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="autoscaling/v2",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="HorizontalPodAutoscaler",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class StatefulSet(models.V1StatefulSet):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="apps/v1", kind="StatefulSet")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="apps/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="StatefulSet",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class Job(models.V1Job):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="batch/v1", kind="Job")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="batch/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="Job",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class CronJob(models.V1CronJob):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="batch/v1", kind="CronJob")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="batch/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="CronJob",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class Ingress(models.V1Ingress):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="networking.k8s.io/v1", kind="Ingress")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="networking.k8s.io/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="Ingress",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
 
 
 class APIService(models.V1APIService):
-    def __init__(self, /, **data: Any) -> None:
-        _data = dict(api_version="apiregistration.k8s.io/v1", kind="APIService")
-        _data.update(data)
-        super().__init__(**_data)
+    api_version: StrictStr = Field(
+        default="apiregistration.k8s.io/v1",
+        description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
+        alias="apiVersion",
+    )
+    kind: StrictStr = Field(
+        default="APIService",
+        description="Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",  # noqa: E501
+    )
