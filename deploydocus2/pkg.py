@@ -6,7 +6,7 @@ from typing import LiteralString
 import pydantic as pyd
 from pydantic import Field
 
-from .types import (
+from ._types import (
     APIServiceSequence,
     ClusterRoleBindingSequence,
     ClusterRoleSequence,

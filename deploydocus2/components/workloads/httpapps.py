@@ -35,10 +35,7 @@ from pydantic import (
     model_validator,
 )
 
-from deploydocus2.components.models import DeploydocusComponent
-from deploydocus2.model_partials import ConfigMap, Deployment, Ingress, Secret, Service
-from deploydocus2.pkg import InstanceSettings, K8sComponentsModel
-from deploydocus2.types import (
+from deploydocus2._types import (
     ConfigMapSequence,
     CronJobSequence,
     DeploymentSequence,
@@ -51,6 +48,9 @@ from deploydocus2.types import (
     ServiceAccountSequence,
     ServiceSequence,
 )
+from deploydocus2.components.models import DeploydocusComponent
+from deploydocus2.model_partials import ConfigMap, Deployment, Ingress, Secret, Service
+from deploydocus2.pkg import InstanceSettings, K8sComponentsModel
 
 
 class HttpProbe(BaseModel):
