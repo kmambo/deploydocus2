@@ -36,12 +36,13 @@ cython = "^3.1.2"
 flake8-pydantic = "^0.4.0"
 setuptools = "^80.9.0"
 pip = "^25.1.1"
-pytest = "^8.3.5"
+pytest = "^8.4.1"
 ipython = "^9.3.0"
 python-devtools = "^2"
 pyright = "^1.1.402"
 datamodel-code-generator = "^0.31.2"
 pyyaml = "^6.0.2"
+pytest-cov = "^6.2.1"
 
 
 [tool.poetry.group.docs.dependencies]
@@ -49,9 +50,6 @@ mkdocs = "^1.6.1"
 mkdocs-material = "^9.6.7"
 mkdocstrings = {version = ">=0.18", extras = ["python"]}
 
-
-[tool.poetry.group.test.dependencies]
-pytest = "^8.3.5"
 
 [tool.black]
 line-length = 88

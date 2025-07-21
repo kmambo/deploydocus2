@@ -37,7 +37,6 @@ from ._types import (
     StorageClassSequence,
 )
 
-
 __all__ = [
     "NamespaceSequence",
     "NetworkPolicySequence",

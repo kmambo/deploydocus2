@@ -50,6 +50,12 @@ kind-load: example-image
 test: sync
 	PYTHONPATH=src:extras INTEGRATION=0 $(RUNNER_CMD) pytest tests -v
 
+cov:
+	PYTHONPATH=src:extras INTEGRATION=0 $(RUNNER_CMD) pytest --cov=deploydocus2 \
+		--cov-report annotate \
+		--cov-report html \
+		tests/
+
 docs:
 	$(MAKE) -C docs html
 
