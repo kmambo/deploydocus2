@@ -28,8 +28,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^6.0.1"
-mypy = "^1.16.0"
-flake8 = "^7.2.0"
+mypy = "^1.17.0"
+flake8 = "^7.3.0"
 black = "^25.1.0"
 wheel = "^0.45.1"
 cython = "^3.1.2"
@@ -47,7 +47,7 @@ pytest-cov = "^6.2.1"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.1"
-mkdocs-material = "^9.6.7"
+mkdocs-material = "^9.6.15"
 mkdocstrings = {version = ">=0.18", extras = ["python"]}
 
 
