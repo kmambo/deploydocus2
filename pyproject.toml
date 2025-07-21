@@ -9,7 +9,7 @@ readme = "README.md"
 requires-python = ">=3.13,<4.0"
 dependencies = [
     "pydantic (>=2.10.6,<3.0.0)",
-    "kubernetes-asyncio-pydantic @ file:///Users/partho/kubernetes-python-client-project-root/kubernetes-client-gen-upstream/output/dist/kubernetes_asyncio_pydantic-1.32.5-py3-none-any.whl",
+    "kubernetes-asyncio-pydantic @ git+https://github.com/kmambo/kubernetes-pydantic-asyncio-client@v1.32.7",
     "rich (>=14.0.0,<15.0.0)",
 ]
 license = "AGPL-3.0-or-later"

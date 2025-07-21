@@ -989,15 +989,14 @@ MarkupSafe = ">=2.0"
 i18n = ["Babel (>=2.7)"]
 
 [[package]]
-name = "kubernetes_asyncio_pydantic"
-version = "1.32.5"
+name = "kubernetes-asyncio-pydantic"
+version = "1.32.7"
 description = "Kubernetes client"
 optional = false
 python-versions = ">=3.12,<4.0"
 groups = ["main"]
-files = [
-    {file = "kubernetes_asyncio_pydantic-1.32.5-py3-none-any.whl", hash = "sha256:cd4d16f0e6cc185272bbc54705dac93f5cb62e4810005e05c2b1cb4c82b51a75"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 aiohttp = ">=3.8.4"
@@ -1008,8 +1007,10 @@ typing-extensions = ">=4.7.1"
 urllib3 = ">=1.25.3,<3.0.0"
 
 [package.source]
-type = "file"
-url = "../../kubernetes-python-client-project-root/kubernetes-client-gen-upstream/output/dist/kubernetes_asyncio_pydantic-1.32.5-py3-none-any.whl"
+type = "git"
+url = "https://github.com/kmambo/kubernetes-pydantic-asyncio-client"
+reference = "v1.32.7"
+resolved_reference = "be280d8ebd75a9b9af0f706b372597a64b7b0db0"
 
 [[package]]
 name = "markdown"
@@ -2523,4 +2524,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<4.0"
-content-hash = "b767aba613f5929357e6a09db66e0804daf635190fede1bb05696f7fa26818aa"
+content-hash = "9b6df08a4a1d95a23c3698ad08a80db841070d02b467cb519d06baeb1a1e0a13"
