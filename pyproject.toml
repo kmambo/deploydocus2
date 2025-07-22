@@ -50,7 +50,6 @@ mkdocs = "^1.6.1"
 mkdocs-material = "^9.6.15"
 mkdocstrings = {version = ">=0.18", extras = ["python"]}
 
-
 [tool.black]
 line-length = 88
 target-version = ["py312", "py313"]
