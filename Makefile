@@ -12,11 +12,11 @@ RUNNER_CMD:=poetry run
 
 all: lint test build
 
-tag:
-	git tag -a v$(VERSION) -m " auto-tagged"
-
 version: pyproject.toml
 	echo $(VERSION)
+
+tag: version
+	git tag -a v$(VERSION) -m "auto-tagged"
 
 name: pyproject.toml
 	echo $(NAME)
