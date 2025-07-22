@@ -6,10 +6,11 @@ authors = [
     {name = "Partho Bhowmick",email = "p.s.bhowmick@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.12,<4.0"
+requires-python = ">=3.13,<4.0"
 dependencies = [
     "pydantic (>=2.10.6,<3.0.0)",
-    "kubernetes-asyncio-pydantic @ file:///Users/partho/kubernetes-python-client-project-root/python-async-client/dist/kubernetes_asyncio_pydantic-29.1.0-py3-none-any.whl",
+    "kubernetes-asyncio-pydantic @ git+https://github.com/kmambo/kubernetes-pydantic-asyncio-client@v1.32.7",
+    "rich (>=14.0.0,<15.0.0)",
 ]
 license = "AGPL-3.0-or-later"
 classifiers = [
@@ -27,25 +28,27 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^6.0.1"
-mypy = "^1.15.0"
-flake8 = "^7.1.2"
+mypy = "^1.17.0"
+flake8 = "^7.3.0"
 black = "^25.1.0"
 wheel = "^0.45.1"
-cython = "^3.0.12"
+cython = "^3.1.2"
 flake8-pydantic = "^0.4.0"
-setuptools = "^75.8.2"
-pip = "^25.0.1"
-pytest = "^8.3.5"
+setuptools = "^80.9.0"
+pip = "^25.1.1"
+pytest = "^8.4.1"
+ipython = "^9.3.0"
+python-devtools = "^2"
+pyright = "^1.1.402"
+datamodel-code-generator = "^0.31.2"
+pyyaml = "^6.0.2"
+pytest-cov = "^6.2.1"
 
 
 [tool.poetry.group.docs.dependencies]
-sphinx = "^8.2.3"
 mkdocs = "^1.6.1"
-mkdocs-material = "^9.6.7"
-
-
-[tool.poetry.group.test.dependencies]
-pytest = "^8.3.5"
+mkdocs-material = "^9.6.15"
+mkdocstrings = {version = ">=0.18", extras = ["python"]}
 
 [tool.black]
 line-length = 88

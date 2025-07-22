@@ -1,12 +1,12 @@
 import logging
-from functools import reduce, wraps
+from functools import reduce
 from operator import concat
-from typing import LiteralString, Self
+from typing import LiteralString
 
 import pydantic as pyd
+from pydantic import Field
 
-from .types import (
-    SUPPORTED_KINDS,
+from ._types import (
     APIServiceSequence,
     ClusterRoleBindingSequence,
     ClusterRoleSequence,
@@ -18,10 +18,8 @@ from .types import (
     HorizontalPodAutoscalerSequence,
     IngressSequence,
     JobSequence,
-    LabelsDict,
-    LabelsSelector,
+    K8sModelSequence,
     LimitRangeSequence,
-    ManifestSequence,
     NamespaceSequence,
     NetworkPolicySequence,
     PersistentVolumeClaimSequence,
@@ -46,65 +44,43 @@ DEPLOYDOCUS_DOMAIN: LiteralString = "deploydocus.io"
 
 
 class InstanceSettings(pyd.BaseModel):
-    instance_name: str
-    instance_version: str
-    instance_namespace: str
-    image_name_with_tag: str | None = None
+    name: str
+    namespace: str = Field(
+        description="The namespace in which the application will be deployed"
+    )
 
 
-def autosort(f):
-    @wraps(f)
-    def wrapped(*args, **kwargs):
-        ret: ManifestSequence = f(*args, **kwargs)
-        ret.sort(
-            key=lambda obj: list(SUPPORTED_KINDS).index(
-                obj["kind"] if isinstance(obj, dict) else obj.kind
-            )
-        )
-        return ret
+class K8sComponentsModel(pyd.BaseModel):
+    """This is created by a Component and represents a collection of Kubernetes
+    objects."""
 
-    return wrapped
-
-
-class K8sComponentModel(pyd.BaseModel):
-    """
-    This is created by a Component
-    """
-
-    pkg_name: str = pyd.Field(default="", description="A name of this application")
+    pkg_name: str = pyd.Field(description="A name of this application")
     pkg_version: str = pyd.Field(
         description="Provide a version number for the application. This is independent"
         " of the individual components  of the application"
     )
     instance_settings: InstanceSettings
 
-    @pyd.model_validator(mode="after")
-    def validate_after(self: Self) -> Self:
-        if not self.pkg_name:
-            self.pkg_name = self.__class__.__name__
-        return self
-
     @property
-    def default_labels(self) -> LabelsDict:
+    def default_labels(self) -> dict[str, str] | None:
         """Override this if you need to. The default labels which are generated
         and can and should be applied to the mani"""
         return {
             "app.kubernetes.io/name": self.pkg_name,
-            "app.kubernetes.io/instance": self.instance_settings.instance_name,
-            "app.kubernetes.io/version": self.instance_settings.instance_version,
-            "app.kubernetes.io/managed-by": DEPLOYDOCUS_DOMAIN,
-            "deploydocus-pkg": f"{self.pkg_name}-{self.pkg_version}",
+            "app.kubernetes.io/instance": self.instance_settings.name,
+            "app.kubernetes.io/version": self.pkg_version,
         }
 
     @property
-    def default_selectors(self) -> LabelsSelector:
+    def default_selectors(self) -> dict[str, str] | None:
         return {
             "app.kubernetes.io/name": self.pkg_name,
-            "app.kubernetes.io/instance": self.instance_settings.instance_name,
-            "app.kubernetes.io/managed-by": DEPLOYDOCUS_DOMAIN,
+            "app.kubernetes.io/instance": self.instance_settings.name,
         }
 
-    def render_namespaces(self) -> NamespaceSequence:
+    def render_namespaces(
+        self,
+    ) -> NamespaceSequence:
         """
 
         Returns:
@@ -113,7 +89,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_networkpolicies(self) -> NetworkPolicySequence:
+    def render_networkpolicies(
+        self,
+    ) -> NetworkPolicySequence:
         """
 
         Returns:
@@ -122,7 +100,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_resourcequotas(self) -> ResourceQuotaSequence:
+    def render_resourcequotas(
+        self,
+    ) -> ResourceQuotaSequence:
         """
 
         Returns:
@@ -131,7 +111,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_limitranges(self) -> LimitRangeSequence:
+    def render_limitranges(
+        self,
+    ) -> LimitRangeSequence:
         """
 
         Returns:
@@ -140,7 +122,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_poddisruptionbudgets(self) -> PodDisruptionBudgetSequence:
+    def render_poddisruptionbudgets(
+        self,
+    ) -> PodDisruptionBudgetSequence:
         """
 
         Returns:
@@ -149,7 +133,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_serviceaccounts(self) -> ServiceAccountSequence:
+    def render_serviceaccounts(
+        self,
+    ) -> ServiceAccountSequence:
         """
 
         Returns:
@@ -158,7 +144,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_secrets(self) -> SecretSequence:
+    def render_secrets(
+        self,
+    ) -> SecretSequence:
         """
 
         Returns:
@@ -176,7 +164,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_storageclasses(self) -> StorageClassSequence:
+    def render_storageclasses(
+        self,
+    ) -> StorageClassSequence:
         """
 
         Returns:
@@ -185,7 +175,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_persistentvolumes(self) -> PersistentVolumeSequence:
+    def render_persistentvolumes(
+        self,
+    ) -> PersistentVolumeSequence:
         """
 
         Returns:
@@ -194,7 +186,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_persistentvolumeclaims(self) -> PersistentVolumeClaimSequence:
+    def render_persistentvolumeclaims(
+        self,
+    ) -> PersistentVolumeClaimSequence:
         """
 
         Returns:
@@ -214,7 +208,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_clusterroles(self) -> ClusterRoleSequence:
+    def render_clusterroles(
+        self,
+    ) -> ClusterRoleSequence:
         """
 
         Returns:
@@ -223,7 +219,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_clusterrolebindings(self) -> ClusterRoleBindingSequence:
+    def render_clusterrolebindings(
+        self,
+    ) -> ClusterRoleBindingSequence:
         """
 
         Returns:
@@ -232,7 +230,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_roles(self) -> RoleSequence:
+    def render_roles(
+        self,
+    ) -> RoleSequence:
         """
 
         Returns:
@@ -241,7 +241,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_rolebindings(self) -> RoleBindingSequence:
+    def render_rolebindings(
+        self,
+    ) -> RoleBindingSequence:
         """
 
         Returns:
@@ -250,7 +252,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_services(self) -> ServiceSequence:
+    def render_services(
+        self,
+    ) -> ServiceSequence:
         """
 
         Returns:
@@ -259,7 +263,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_daemonsets(self) -> DaemonSetSequence:
+    def render_daemonsets(
+        self,
+    ) -> DaemonSetSequence:
         """
 
         Returns:
@@ -268,7 +274,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_pods(self) -> PodSequence:
+    def render_pods(
+        self,
+    ) -> PodSequence:
         """
 
         Returns:
@@ -277,7 +285,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_replicationcontrollers(self) -> ReplicationControllerSequence:
+    def render_replicationcontrollers(
+        self,
+    ) -> ReplicationControllerSequence:
         """
 
         Returns:
@@ -286,7 +296,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_replicasets(self) -> ReplicaSetSequence:
+    def render_replicasets(
+        self,
+    ) -> ReplicaSetSequence:
         """
 
         Returns:
@@ -295,7 +307,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_deployments(self) -> DeploymentSequence:
+    def render_deployments(
+        self,
+    ) -> DeploymentSequence:
         """
 
         Returns:
@@ -304,7 +318,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_horizontalpodautoscalers(self) -> HorizontalPodAutoscalerSequence:
+    def render_horizontalpodautoscalers(
+        self,
+    ) -> HorizontalPodAutoscalerSequence:
         """
 
         Returns:
@@ -313,7 +329,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_statefulsets(self) -> StatefulSetSequence:
+    def render_statefulsets(
+        self,
+    ) -> StatefulSetSequence:
         """
 
         Returns:
@@ -322,7 +340,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_jobs(self) -> JobSequence:
+    def render_jobs(
+        self,
+    ) -> JobSequence:
         """
 
         Returns:
@@ -331,7 +351,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_cronjobs(self) -> CronJobSequence:
+    def render_cronjobs(
+        self,
+    ) -> CronJobSequence:
         """
 
         Returns:
@@ -340,7 +362,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_ingresses(self) -> IngressSequence:
+    def render_ingresses(
+        self,
+    ) -> IngressSequence:
         """
 
         Returns:
@@ -349,7 +373,9 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render_apiservices(self) -> APIServiceSequence:
+    def render_apiservices(
+        self,
+    ) -> APIServiceSequence:
         """
 
         Returns:
@@ -358,13 +384,13 @@ class K8sComponentModel(pyd.BaseModel):
 
         return []
 
-    def render(self) -> ManifestSequence:
+    def render(self) -> K8sModelSequence:
         """Renders the Kubernetes manifests for the application
 
         Returns:
 
         """
-        manifests: ManifestSequence = reduce(
+        manifests: K8sModelSequence = reduce(
             concat,
             [
                 self.render_namespaces(),
