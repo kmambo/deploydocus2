@@ -1,5 +1,6 @@
-VERSION=$(shell grep ^version pyproject.toml | gawk -F"[= ]" '{print $$NF}' | tr -d '"')
-NAME=$(shell grep ^name pyproject.toml | gawk -F"[= ]" '{print $$NF}' | tr -d '"')
+AWK:=/usr/local/bin/gawk
+VERSION=$(shell grep ^version pyproject.toml | $(AWK) -F"[= ]" '{print $$NF}' | tr -d '"')
+NAME=$(shell grep ^name pyproject.toml | $(AWK) -F"[= ]" '{print $$NF}' | tr -d '"')
 DIR:=${CURDIR}
 EXAMPLE_DIR:=$(DIR)/extras/example_app_pkg
 MAKE:=make
