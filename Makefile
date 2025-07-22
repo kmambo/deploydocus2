@@ -5,7 +5,7 @@ DIR:=${CURDIR}
 EXAMPLE_DIR:=$(DIR)/extras/example_app_pkg
 MAKE:=make
 src_files:=$(shell find $(DIR) -type f -name '*.py')
-PYTHON:=python3
+PYTHON:=python3.13
 RUNNER_CMD:=poetry run
 
 .PHONY: all name version lint git_tag example-image test docs publish
@@ -25,10 +25,10 @@ poetry.lock: pyproject.toml
 	poetry lock
 
 lint: poetry.lock deploydocus2 tests
-	$(RUNNER_CMD) isort deploydocus2 tests #docs/source extras/simple_example_json_server/simplejsonserver/basichttp.py extras/example_app_pkg
-	$(RUNNER_CMD) black deploydocus2 tests #docs/source extras/simple_example_json_server/simplejsonserver/basichttp.py extras/example_app_pkg
-	$(RUNNER_CMD) flake8 deploydocus2 tests #docs/source extras/simple_example_json_server/simplejsonserver/basichttp.py extras/example_app_pkg
-	$(RUNNER_CMD) $(DIR)/scripts/dmypy.sh deploydocus2 tests #extras/simple_example_json_server/simplejsonserver/basichttp.py extras/example_app_pkg
+	$(RUNNER_CMD) isort deploydocus2 tests
+	$(RUNNER_CMD) black deploydocus2 tests
+	$(RUNNER_CMD) flake8 deploydocus2 tests
+	$(RUNNER_CMD) $(DIR)/scripts/dmypy.sh deploydocus2 tests
 
 sync: poetry.lock
 	poetry sync --no-root
