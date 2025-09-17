@@ -27,30 +27,33 @@ from deploydocus2.components.workloads.httpapps import (
 
 
 @pytest.fixture
-def app_config_nonsensitive() -> KeyValuePairsNonSensitive:
-    return KeyValuePairsNonSensitive(
-        kv_pairs={"key1": "value1"},
-        mount_path="/var/run/config",
-    )
+def app_config_nonsensitive() -> dict[str, KeyValuePairsNonSensitive]:
+    return {
+        "lone_cfg": KeyValuePairsNonSensitive(
+            kv_pairs={"key1": "value1"},
+            mount_path="/var/run/config",
+        ),
+        "env_vars": KeyValuePairsNonSensitive(kv_pairs={"key1": "value1"}),
+    }
 
 
 @pytest.fixture
-def app_config_sensitive_mock() -> KeyValuePairsSecretsExtSrc:
-    kv_ext_src = Mock(KeyValuePairsSecretsExtSrc)
+def app_config_sensitive_mock() -> dict[str, KeyValuePairsSecretsExtSrc]:
+    kv_ext_src = KeyValuePairsSecretsExtSrc(kv)
     kv_ext_src.kv_pairs = {"secret_key1": "secret_value1"}
-    return kv_ext_src
+    return {"mock_secret": kv_ext_src}
 
 
 @pytest.fixture
-def app_config_nonsensitive_mock() -> KeyValuePairsNonSensitive:
-    ret = Mock(KeyValuePairsNonSensitive)
+def app_config_nonsensitive_mock() -> dict[str, KeyValuePairsNonSensitive]:
+    ret = {"env_dir": KeyValuePairsNonSensitive()}
     return ret
 
 
 @pytest.fixture
 def application(
-    app_config_nonsensitive_mock: KeyValuePairsNonSensitive,
-    app_config_sensitive_mock: KeyValuePairsSecretsExtSrc,
+    app_config_nonsensitive_mock: dict[str, KeyValuePairsNonSensitive],
+    app_config_sensitive_mock: dict[str, KeyValuePairsSecretsExtSrc],
 ):
     return SimpleHttpApplication(
         app_name="test-app",
@@ -70,7 +73,7 @@ def application(
             ingress_class_name="nginx",
             rules=[HttpIngressRule(path="/api", path_type=RuleType.PREFIX)],
         ),
-        service_ports={"http": 8080},
+        app_ports={"http": 8080},
     )
 
 

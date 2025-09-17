@@ -1,6 +1,6 @@
 [project]
 name = "deploydocus2"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = [
     {name = "Partho Bhowmick",email = "p.s.bhowmick@gmail.com"}
@@ -48,6 +48,9 @@ pytest-cov = "^6.2.1"
 mkdocs = "^1.6.1"
 mkdocs-material = {extras = ["imaging"], version = "^9.6.15"}
 mkdocstrings-python = "^1.16.12"
+mkdocs-exclude = "^1.0.2"
+mkdocs-redirects = "^1.2.2"
+pymdown-extensions = "^10.16.1"
 
 [tool.black]
 line-length = 88

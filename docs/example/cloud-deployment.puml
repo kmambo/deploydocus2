@@ -1,0 +1,25 @@
+@startuml
+title Client request flow through Ingress to API server Pods
+
+'left to right direction
+actor "HTTP Client" as Client
+
+package "Kubernetes Cluster" {
+
+    [Ingress] <<Ingress Controller>>
+
+    [API Service] <<Service>>
+
+    package "API Deployment" {
+        [API Pod 1] <<Pod>>
+        [API Pod 2] <<Pod>>
+        [API Pod 3] <<Pod>>
+    }
+}
+
+Client --> [Ingress] : HTTP Request
+[Ingress] --> [API Service] : Routes to Service
+[API Service] --> [API Pod 1] : Forwards first request
+[API Service] --> [API Pod 2] : The second request\nrouted through the\nService will be\nforwarded to this pod
+[API Service] --> [API Pod 3] : The third request\nrouted through the\nService will be\nforwarded to this pod
+@enduml

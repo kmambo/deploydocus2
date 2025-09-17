@@ -7,8 +7,9 @@ MAKE:=make
 src_files:=$(shell find $(DIR) -type f -name '*.py')
 PYTHON:=python3.13
 RUNNER_CMD:=poetry run
+DOCFILES := $(shell find $(DIR)/ -type f -name '*.md')
 
-.PHONY: all name version lint git_tag example-image test docs publish
+.PHONY: all name version lint git_tag example-image test cov site publish
 
 all: lint test build
 
@@ -30,6 +31,7 @@ lint: poetry.lock deploydocus2 tests
 	$(RUNNER_CMD) flake8 deploydocus2 tests
 	$(RUNNER_CMD) $(DIR)/scripts/dmypy.sh deploydocus2 tests
 
+.PHONY: sync
 sync: poetry.lock
 	poetry sync --no-root
 
@@ -51,28 +53,15 @@ kind-load: example-image
 test: sync
 	PYTHONPATH=src:extras INTEGRATION=0 $(RUNNER_CMD) pytest tests -v
 
-cov:
+cov: sync
 	PYTHONPATH=src:extras INTEGRATION=0 $(RUNNER_CMD) pytest --cov=deploydocus2 \
 		--cov-report annotate \
 		--cov-report html \
 		tests/
 
-docs:
-	$(MAKE) -C docs html
-
-.PHONY: preview-docs
-preview-docs: docs
-	$(PYTHON) -m http.server 9000 --bind=127.0.0.1 --directory docs/build/html
-
-.PHONY: site
-site:
-	$(MAKE) -C docs/project_site build
+site: sync
+	$(RUNNER_CMD) mkdocs build
 
 .PHONY: preview-site
 preview-site: site
-	$(MAKE) -C docs/project_site preview
-
-
-.PHONY: deploy-site
-deploy-site: site
-	firebase deploy  --only hosting:deploydocus
+	$(RUNNER_CMD) mkdocs serve
