@@ -28,7 +28,7 @@ from kubernetes_asyncio.models import (
     V1PodTemplateSpec,
     V1Probe,
     V1ServicePort,
-    V1ServiceSpec
+    V1ServiceSpec,
 )
 from pydantic import (
     AfterValidator,
@@ -70,12 +70,12 @@ class HttpProbe(BaseModel):
     rel_url: str | None = Field(
         None,
         description="The relative URL the Kubernetes will "
-                    "periodically issue HTTP GET requests to.",
+        "periodically issue HTTP GET requests to.",
     )
     check_freq: int | None = Field(
         default=None,
         description="The frequency of liveness checks (in secs). This is ignored if "
-                    "liveness is unset. If unset, defaults to 10 seconds.",
+        "liveness is unset. If unset, defaults to 10 seconds.",
     )
 
     @model_validator(mode="after")
@@ -88,7 +88,7 @@ class HttpLivenessProbe(HttpProbe, default_url="/livez"):
     delay_first_probe: int | None = Field(
         None,
         description="If set, wait these many seconds before starting to probe the "
-                    "container.",
+        "container.",
     )
 
 
@@ -112,8 +112,8 @@ class HttpIngressRule(BaseModel):
 
     path: str = Field(
         description="For a prefix matching, must end with a /* . "
-                    "Otherwise assumed to be an exact match. "
-                    "See docs for examples"
+        "Otherwise assumed to be an exact match. "
+        "See docs for examples"
     )
     path_type: RuleType = Field(
         default=RuleType.PREFIX, description="The type of path match. "
@@ -124,14 +124,14 @@ class HttpIngressHostWithRules(BaseModel):
     host: str | None = Field(
         None,
         description="Set to None regardless of the `Host` "
-                    "header in the incoming HTTP request",
+        "header in the incoming HTTP request",
     )
     ingress_class_name: str | None = Field(
         default=None,
         description="(Recommended) The name of the ingress class. Leave it at None if "
-                    "you want to use the default class. The application developer is "
-                    "not expected to setup the Ingress class, that is the cluster "
-                    "operator's burden.",
+        "you want to use the default class. The application developer is "
+        "not expected to setup the Ingress class, that is the cluster "
+        "operator's burden.",
     )
     rules: Sequence[HttpIngressRule] = Field(
         description="Set of rules to match against the host."
@@ -193,9 +193,9 @@ class KeyValuePairsNonSensitive(BaseModel, KeysMapper):
     mount_path: Path | None = Field(
         None,
         description="Leave it unset (None) if you want to expose "
-                    "these as environment variables. Otherwise, the KV-pairs are exposed under "
-                    "the directory specified by this field. The keys becomes the filenames and "
-                    "the values become the file contents",
+        "these as environment variables. Otherwise, the KV-pairs are exposed under "
+        "the directory specified by this field. The keys becomes the filenames and "
+        "the values become the file contents",
         strict=False,
     )
 
@@ -242,11 +242,11 @@ class KeyValuePairsSecretsExtSrc(BaseModel, KeysMapper):
 
     secrets_key_mapping: dict[str, str] = Field(
         description="This is to control which entries are exposed in the Kubernetes "
-                    "namespace and what keys they will be exposed as. For example, "
-                    " if your secrets in Vault KV store has 2 secrets as "
-                    "{'key1': 'value1' ,'key2': 'value2'}, and you only want to "
-                    "expose 'value2' as an environment variable 'MY_TERRIBLE_SECRET' "
-                    "then you will need this field to be {'key2': 'MY_TERRIBLE_SECRET'} "
+        "namespace and what keys they will be exposed as. For example, "
+        " if your secrets in Vault KV store has 2 secrets as "
+        "{'key1': 'value1' ,'key2': 'value2'}, and you only want to "
+        "expose 'value2' as an environment variable 'MY_TERRIBLE_SECRET' "
+        "then you will need this field to be {'key2': 'MY_TERRIBLE_SECRET'} "
     )
 
     def map_keys(self) -> Mapping[str, str]:
@@ -265,17 +265,17 @@ class SimpleHttpApplication(DeploydocusComponent):
     app_name: str | None = Field(
         None,
         description="(Recommended) The application name. Don't make it overly "
-                    "long because it forms the basis of other kubernetes "
-                    "objects' names such deployments and services and they "
-                    "may become too long and fail to be created.",
+        "long because it forms the basis of other kubernetes "
+        "objects' names such deployments and services and they "
+        "may become too long and fail to be created.",
         validate_default=True,
     )
     instance_name: str | None = Field(
         None,
         description="Normally not required to be set. Set this only if you need to "
-                    "deploy another instance of the same application in the same "
-                    "namespace. Otherwise it gets set automatically to be the same as "
-                    "`app_name`.",
+        "deploy another instance of the same application in the same "
+        "namespace. Otherwise it gets set automatically to be the same as "
+        "`app_name`.",
         validate_default=True,
     )
     version: str = Field(description="A semver-ed version number.")
@@ -284,89 +284,89 @@ class SimpleHttpApplication(DeploydocusComponent):
     )
     app_image: str = Field(
         description="The fully tagged image to run. Something like "
-                    "'gcr.io/kaniko-project/executor:v1.23.2'"
+        "'gcr.io/kaniko-project/executor:v1.23.2'"
     )
     app_command: Optional[list[str]] = Field(
         None,
         description="Command to run in the application container instead of the default"
-                    " command. Only one of app_entrypoint_args or app_command must be "
-                    "set. If you want the default container entrypoint/command to"
-                    " be run, don't set either. Provide it as a string-array without spaces. So, "
-                    "if the command in the container application was meant to be "
-                    "'application_exec --env1=arg1 --env2=arg2', "
-                    "then set this field to ['application_exec', '--env1=arg1', '--env2=arg2']",
+        " command. Only one of app_entrypoint_args or app_command must be "
+        "set. If you want the default container entrypoint/command to"
+        " be run, don't set either. Provide it as a string-array without spaces. So, "
+        "if the command in the container application was meant to be "
+        "'application_exec --env1=arg1 --env2=arg2', "
+        "then set this field to ['application_exec', '--env1=arg1', '--env2=arg2']",
     )
     app_entrypoint_args: Optional[list[str]] = Field(
         None,
         description="The arguments passed to container's entrypoint. Only one of "
-                    "app_entrypoint_args or app_command must be set. If you want the "
-                    "default container entrypoint/command to be run, don't set either."
-                    "Provide it as a string-array without spaces. So, "
-                    "if the args to te the container application was meant to be "
-                    "'--env1=arg1 --env2=arg2', "
-                    "then set this field to ['--env1=arg1', '--env2=arg2']",
+        "app_entrypoint_args or app_command must be set. If you want the "
+        "default container entrypoint/command to be run, don't set either."
+        "Provide it as a string-array without spaces. So, "
+        "if the args to te the container application was meant to be "
+        "'--env1=arg1 --env2=arg2', "
+        "then set this field to ['--env1=arg1', '--env2=arg2']",
     )
     app_config_non_sensitive: dict[str, KeyValuePairsNonSensitive] | None = Field(
         None,
         description="Provides (non-sensitive) configuration information for the "
-                    "application either as environment variables or as files mounted"
-                    " for the container. Since, sometimes, multiple configurations are provided "
-                    "for the application (usually because they are mounted at different "
-                    "directories), this field is a dictionary with keys that serve as unique names "
-                    "in the application container's context.",
+        "application either as environment variables or as files mounted"
+        " for the container. Since, sometimes, multiple configurations are provided "
+        "for the application (usually because they are mounted at different "
+        "directories), this field is a dictionary with keys that serve as unique names "
+        "in the application container's context.",
     )
     app_config_secrets: dict[str, KeyValuePairsSecretsExtSrc] | None = Field(
         None,
         description="Provides sensitive configuration information for the application."
-                    " Usually it is from an external source like Vault KV engine.",
+        " Usually it is from an external source like Vault KV engine.",
     )
     replicas: int | None = Field(
         None,
         description="Number of application instances to run in parallel. "
-                    "If left unset, a single replica will be created. (This field itself will be "
-                    "None). ",
+        "If left unset, a single replica will be created. (This field itself will be "
+        "None). ",
     )
     http_named_ports: dict[str, int] = Field(
         default={
             "http": 8080,
         },
         description=r"The ports used by the application's container. e.g. "
-                    r"{'http': 8080, 'https': 8443}. Neither port names nor their "
-                    r"corresponding port numbers can be repeated.",
+        r"{'http': 8080, 'https': 8443}. Neither port names nor their "
+        r"corresponding port numbers can be repeated.",
     )
 
     # container probes
     startup_probe: HttpStartupProbe | None = Field(
         None,
         description="Most HTTP microservices don't need this."
-                    "Use only for slow starting containers. It disables liveness and "
-                    "readiness checks until it succeeds.",
+        "Use only for slow starting containers. It disables liveness and "
+        "readiness checks until it succeeds.",
     )
     liveness_probe: Optional[HttpLivenessProbe] = Field(
         HttpLivenessProbe(),
         description="Determines when a container is ready to start accepting traffic. "
-                    "If a container fails its liveness probe repeatedly, it is "
-                    "presumed dead and thus restarted. By convention, it is '/livez'. "
-                    "Set to None to disable liveness probe.",
+        "If a container fails its liveness probe repeatedly, it is "
+        "presumed dead and thus restarted. By convention, it is '/livez'. "
+        "Set to None to disable liveness probe.",
     )
     readiness_probe: Optional[HttpReadinessProbe] = Field(
         HttpReadinessProbe(),
         description="Determines when a container is ready to start accepting traffic."
-                    " If a container fails its readiness probe , traffic is not "
-                    "directed to it. By convention, it is '/readyz'. Set to None to "
-                    "disable readiness probe.",
+        " If a container fails its readiness probe , traffic is not "
+        "directed to it. By convention, it is '/readyz'. Set to None to "
+        "disable readiness probe.",
     )
     app_ports: dict[str, int] = Field(
         description="Must have the same keys as the `http_named_ports` field. "
-                    "Maps ports with the same name to the corresponding port numbers in the "
-                    "application container."
+        "Maps ports with the same name to the corresponding port numbers in the "
+        "application container."
     )
     ingress: HttpIngressHostWithRules | None = Field(
         None,
         description="A single HTTP host with routing rules. Set to None if you don't "
-                    "need to expose this application to the internet. See "
-                    "https://kubernetes.io/docs/concepts/services-networking/ingress"
-                    "/#single-service-ingress",
+        "need to expose this application to the internet. See "
+        "https://kubernetes.io/docs/concepts/services-networking/ingress"
+        "/#single-service-ingress",
     )
 
     @model_validator(mode="after")
@@ -509,7 +509,6 @@ class HttpK8sComponentsModel(K8sComponentsModel):
             spec=V1PodSpec(
                 automountServiceAccountToken=False,
                 serviceAccountName=f"{self.instance_settings.name}-{self.pkg_name}-sa",
-
                 containers=[
                     V1Container(
                         name=self.hl_class.app_name,
@@ -528,8 +527,7 @@ class HttpK8sComponentsModel(K8sComponentsModel):
                             V1ContainerPort(
                                 protocol="TCP", container_port=port_no, name=port_name
                             )
-                            for port_name, port_no in
-                            self.hl_class.http_named_ports.items()  # noqa: E501
+                            for port_name, port_no in self.hl_class.http_named_ports.items()  # noqa: E501
                         ],
                         liveness_probe=(
                             V1Probe(

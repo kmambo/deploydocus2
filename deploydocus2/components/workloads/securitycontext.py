@@ -1,10 +1,19 @@
 from typing import TypeAlias
 
-from kubernetes_asyncio import V1PodSecurityContext, V1AppArmorProfile, \
-    V1SeccompProfile, V1SecurityContext, V1Capabilities
+from kubernetes_asyncio import (
+    V1AppArmorProfile,
+    V1Capabilities,
+    V1PodSecurityContext,
+    V1SeccompProfile,
+    V1SecurityContext,
+)
 
-sane_app_armor_profile = V1AppArmorProfile(type='RuntimeDefault', )
-sane_seccomp_profile = V1SeccompProfile(type='RuntimeDefault', )
+sane_app_armor_profile = V1AppArmorProfile(
+    type="RuntimeDefault",
+)
+sane_seccomp_profile = V1SeccompProfile(
+    type="RuntimeDefault",
+)
 SanePodSecurityContext = V1PodSecurityContext(
     app_armor_profile=sane_app_armor_profile,
     run_as_non_root=True,
@@ -14,7 +23,11 @@ SanePodSecurityContext = V1PodSecurityContext(
 )
 
 ContainerSecurityContext: TypeAlias = V1SecurityContext
-sane_container_capabilities = V1Capabilities(drop=['ALL', ])
+sane_container_capabilities = V1Capabilities(
+    drop=[
+        "ALL",
+    ]
+)
 sane_container_security_context = ContainerSecurityContext(
     allow_privilege_escalation=False,
     capabilities=sane_container_capabilities,

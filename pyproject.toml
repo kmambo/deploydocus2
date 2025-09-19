@@ -48,15 +48,15 @@ pytest-cov = "^7.0.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.1"
-mkdocs-material = {extras = ["imaging"], version = "^9.6.15"}
-mkdocstrings-python = "^1.16.12"
+mkdocs-material = {extras = ["imaging"], version = "^9.6.20"}
+mkdocstrings-python = "^1.18.2"
 mkdocs-exclude = "^1.0.2"
 mkdocs-redirects = "^1.2.2"
 pymdown-extensions = "^10.16.1"
 
 [tool.black]
 line-length = 88
-target-version = ["py312", "py313"]
+target-version = ["py313"]
 
 [tool.isort]
 profile = "black"
