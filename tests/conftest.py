@@ -2,7 +2,7 @@ from typing import cast
 from unittest.mock import Mock
 
 import pytest
-from kubernetes_asyncio import (
+from kubernetes_asyncio_pydantic import (
     V1Container,
     V1Deployment,
     V1DeploymentSpec,
@@ -39,7 +39,7 @@ def app_config_nonsensitive() -> dict[str, KeyValuePairsNonSensitive]:
 
 @pytest.fixture
 def app_config_sensitive_mock() -> dict[str, KeyValuePairsSecretsExtSrc]:
-    kv_ext_src = KeyValuePairsSecretsExtSrc(kv)
+    kv_ext_src = Mock(KeyValuePairsSecretsExtSrc)
     kv_ext_src.kv_pairs = {"secret_key1": "secret_value1"}
     return {"mock_secret": kv_ext_src}
 

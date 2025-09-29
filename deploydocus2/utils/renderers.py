@@ -1,5 +1,5 @@
 import json
-from typing import Any, AnyStr, cast
+from typing import AnyStr, cast
 
 import yaml
 
@@ -8,15 +8,17 @@ from deploydocus2 import K8sModel, K8sModelSequence
 
 def render(obj: K8sModelSequence | K8sModel, fmt="python") -> AnyStr:
     """Render a single Kubernetes object as YAML, JSON or a Python dict;
-    Or a sequence of Kubernetes objects as YAML, JSON or list of Python dicts. Each of these are then converted to a string
+    Or a sequence of Kubernetes objects as YAML, JSON or list of Python dicts.
+    Each of these are then converted to a string
 
     Args:
-        obj: Must be a sequence of Kubernetes objects (usually a list) or a single Kubernetes object.
+        obj: Must be a sequence of Kubernetes objects (usually a list)
+            or a single Kubernetes object.
         fmt: The default is 'dict' and will return the dictionary as a string.
         The other valid values are 'yaml' and
 
     Returns:
-
+        The rendered YAML, JSON or Python dictionary.
     """
     accepted_fmts = ["yaml", "json", "python"]
     if not fmt.lower() in accepted_fmts:

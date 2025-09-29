@@ -5,23 +5,19 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Annotated, Any, Callable, Optional, Self, Sequence, cast
 
-from kubernetes_asyncio import (
+from kubernetes_asyncio_pydantic import (
+    IntstrIntOrString,
     V1ConfigMapVolumeSource,
+    V1Container,
+    V1ContainerPort,
+    V1DeploymentSpec,
+    V1HTTPGetAction,
     V1HTTPIngressPath,
     V1HTTPIngressRuleValue,
     V1IngressBackend,
     V1IngressRule,
     V1IngressServiceBackend,
     V1IngressSpec,
-    V1Volume,
-    V1VolumeMount,
-)
-from kubernetes_asyncio.models import (
-    IntstrIntOrString,
-    V1Container,
-    V1ContainerPort,
-    V1DeploymentSpec,
-    V1HTTPGetAction,
     V1LabelSelector,
     V1ObjectMeta,
     V1PodSpec,
@@ -29,6 +25,8 @@ from kubernetes_asyncio.models import (
     V1Probe,
     V1ServicePort,
     V1ServiceSpec,
+    V1Volume,
+    V1VolumeMount,
 )
 from pydantic import (
     AfterValidator,
@@ -356,10 +354,11 @@ class SimpleHttpApplication(DeploydocusComponent):
         "directed to it. By convention, it is '/readyz'. Set to None to "
         "disable readiness probe.",
     )
-    app_ports: dict[str, int] = Field(
+    app_ports: dict[str, int] | None = Field(
         description="Must have the same keys as the `http_named_ports` field. "
         "Maps ports with the same name to the corresponding port numbers in the "
-        "application container."
+        "application container.",
+        default=None,
     )
     ingress: HttpIngressHostWithRules | None = Field(
         None,
@@ -379,6 +378,15 @@ class SimpleHttpApplication(DeploydocusComponent):
             self.app_name = self.__class__.__name__
         if not self.instance_name:
             self.instance_name = self.app_name
+
+        if self.app_ports is None:
+            self.app_ports = self.http_named_ports
+
+        assert self.app_ports.keys() <= self.http_named_ports.keys(), (
+            f"There are ports defined in the app service abstraction that "
+            f"are not present in the container. "
+            f"{self.http_named_ports.keys() - self.app_ports.keys()}"
+        )
 
         return self
 
@@ -502,6 +510,66 @@ class HttpK8sComponentsModel(K8sComponentsModel):
             for cm in cfg_maps
         ]
 
+        volume_mounts = [
+            V1VolumeMount(
+                name=cast(V1ObjectMeta, cm.metadata).name,
+                mount_path=mnt_pth if mnt_pth != "_" else None,
+            )
+            for mnt_pth, cm in mnt_paths
+        ]
+        liveness_probe = (
+            V1Probe(
+                httpGet=V1HTTPGetAction(
+                    path=self.hl_class.liveness_probe.rel_url,
+                    port=IntstrIntOrString("http"),
+                ),
+                initial_delay_seoonds=self.hl_class.liveness_probe.delay_first_probe,
+                # noqa
+                period_seconds=self.hl_class.liveness_probe.check_freq,
+            )
+            if self.hl_class.liveness_probe
+            else None
+        )
+        readines_probe = (
+            (
+                V1Probe(
+                    httpGet=V1HTTPGetAction(
+                        path=self.hl_class.readiness_probe.rel_url,
+                        port=IntstrIntOrString("http"),
+                    )
+                )
+            )
+            if self.hl_class.readiness_probe
+            else None
+        )
+        startup_probe = (
+            (
+                V1Probe(
+                    httpGet=V1HTTPGetAction(
+                        path=self.hl_class.startup_probe.rel_url,
+                        port=IntstrIntOrString("http"),
+                    )
+                )
+            )
+            if self.hl_class.startup_probe
+            else None
+        )
+        container = V1Container(
+            name=self.hl_class.app_name,
+            image=self.hl_class.app_image,
+            image_pull_policy="Always",
+            command=self.hl_class.app_command,
+            args=self.hl_class.app_entrypoint_args,
+            volume_mounts=volume_mounts,
+            ports=[
+                V1ContainerPort(protocol="TCP", container_port=port_no, name=port_name)
+                for port_name, port_no in self.hl_class.http_named_ports.items()
+                # noqa: E501
+            ],
+            liveness_probe=liveness_probe,
+            readiness_probe=readines_probe,
+            startup_probe=startup_probe,
+        )
         podspec = V1PodTemplateSpec(
             metadata=V1ObjectMeta(
                 labels=pod_labels,
@@ -509,65 +577,7 @@ class HttpK8sComponentsModel(K8sComponentsModel):
             spec=V1PodSpec(
                 automountServiceAccountToken=False,
                 serviceAccountName=f"{self.instance_settings.name}-{self.pkg_name}-sa",
-                containers=[
-                    V1Container(
-                        name=self.hl_class.app_name,
-                        image=self.hl_class.app_image,
-                        image_pull_policy="Always",
-                        command=self.hl_class.app_command,
-                        args=self.hl_class.app_entrypoint_args,
-                        volume_mounts=[
-                            V1VolumeMount(
-                                name=cast(V1ObjectMeta, cm.metadata).name,
-                                mount_path=mnt_pth if mnt_pth != "_" else None,
-                            )
-                            for mnt_pth, cm in mnt_paths
-                        ],
-                        ports=[
-                            V1ContainerPort(
-                                protocol="TCP", container_port=port_no, name=port_name
-                            )
-                            for port_name, port_no in self.hl_class.http_named_ports.items()  # noqa: E501
-                        ],
-                        liveness_probe=(
-                            V1Probe(
-                                httpGet=V1HTTPGetAction(
-                                    path=self.hl_class.liveness_probe.rel_url,
-                                    port=IntstrIntOrString("http"),
-                                ),
-                                initial_delay_seoonds=self.hl_class.liveness_probe.delay_first_probe,
-                                # noqa
-                                period_seconds=self.hl_class.liveness_probe.check_freq,
-                            )
-                            if self.hl_class.liveness_probe
-                            else None
-                        ),
-                        readiness_probe=(
-                            (
-                                V1Probe(
-                                    httpGet=V1HTTPGetAction(
-                                        path=self.hl_class.readiness_probe.rel_url,
-                                        port=IntstrIntOrString("http"),
-                                    )
-                                )
-                            )
-                            if self.hl_class.readiness_probe
-                            else None
-                        ),
-                        startup_probe=(
-                            (
-                                V1Probe(
-                                    httpGet=V1HTTPGetAction(
-                                        path=self.hl_class.startup_probe.rel_url,
-                                        port=IntstrIntOrString("http"),
-                                    )
-                                )
-                            )
-                            if self.hl_class.startup_probe
-                            else None
-                        ),
-                    )
-                ],
+                containers=[container],
                 volumes=[
                     V1Volume(
                         name=cast(V1ObjectMeta, cm.metadata).name,
