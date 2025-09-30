@@ -1,6 +1,6 @@
 from typing import cast
 
-from kubernetes_asyncio import (
+from kubernetes_asyncio_pydantic import (
     V1Deployment,
     V1DeploymentSpec,
     V1ObjectMeta,

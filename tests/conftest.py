@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Mapping, cast
 from unittest.mock import Mock
 
 import pytest
@@ -38,22 +38,22 @@ def app_config_nonsensitive() -> dict[str, KeyValuePairsNonSensitive]:
 
 
 @pytest.fixture
-def app_config_sensitive_mock() -> dict[str, KeyValuePairsSecretsExtSrc]:
+def app_config_sensitive_mock() -> Mapping[str, KeyValuePairsSecretsExtSrc]:
     kv_ext_src = Mock(KeyValuePairsSecretsExtSrc)
     kv_ext_src.kv_pairs = {"secret_key1": "secret_value1"}
     return {"mock_secret": kv_ext_src}
 
 
 @pytest.fixture
-def app_config_nonsensitive_mock() -> dict[str, KeyValuePairsNonSensitive]:
-    ret = {"env_dir": KeyValuePairsNonSensitive()}
+def app_config_nonsensitive_mock() -> Mapping[str, KeyValuePairsNonSensitive]:
+    ret = {"env_dir": Mock(KeyValuePairsNonSensitive)}
     return ret
 
 
 @pytest.fixture
 def application(
-    app_config_nonsensitive_mock: dict[str, KeyValuePairsNonSensitive],
-    app_config_sensitive_mock: dict[str, KeyValuePairsSecretsExtSrc],
+    app_config_nonsensitive_mock: Mapping[str, KeyValuePairsNonSensitive],
+    app_config_sensitive_mock: Mapping[str, KeyValuePairsSecretsExtSrc],
 ):
     return SimpleHttpApplication(
         app_name="test-app",

@@ -474,7 +474,7 @@ class HttpK8sComponentsModel(K8sComponentsModel):
         )
         ports = [
             V1ServicePort(protocol="TCP", port=80, target_port=IntstrIntOrString(port))
-            for port in self.hl_class.app_ports
+            for port in cast(dict[str, int], self.hl_class.app_ports)
         ]
         spec = V1ServiceSpec(
             selector=self.default_selectors,

@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import Union
 
-from kubernetes_asyncio.models import (  # type: ignore[import-untyped]
+from kubernetes_asyncio_pydantic import (  # type: ignore[import-untyped]
     V1APIService,
     V1ClusterRole,
     V1ClusterRoleBinding,

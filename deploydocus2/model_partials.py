@@ -1,8 +1,42 @@
-from kubernetes_asyncio import models
+from kubernetes_asyncio_pydantic import (
+    V1APIService,
+    V1ClusterRole,
+    V1ClusterRoleBinding,
+    V1ClusterRoleBindingList,
+    V1ClusterRoleList,
+    V1ConfigMap,
+    V1CronJob,
+    V1CustomResourceDefinition,
+    V1DaemonSet,
+    V1Deployment,
+    V1Ingress,
+    V1Job,
+    V1LimitRange,
+    V1Namespace,
+    V1NetworkPolicy,
+    V1PersistentVolume,
+    V1PersistentVolumeClaim,
+    V1Pod,
+    V1PodDisruptionBudget,
+    V1ReplicaSet,
+    V1ReplicationController,
+    V1ResourceQuota,
+    V1Role,
+    V1RoleBinding,
+    V1RoleBindingList,
+    V1RoleList,
+    V1Secret,
+    V1SecretList,
+    V1Service,
+    V1ServiceAccount,
+    V1StatefulSet,
+    V1StorageClass,
+    V2HorizontalPodAutoscaler,
+)
 from pydantic import Field, StrictStr
 
 
-class Namespace(models.V1Namespace):
+class Namespace(V1Namespace):
     api_version: StrictStr = Field(
         default="v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -14,7 +48,7 @@ class Namespace(models.V1Namespace):
     )
 
 
-class NetworkPolicy(models.V1NetworkPolicy):
+class NetworkPolicy(V1NetworkPolicy):
     api_version: StrictStr = Field(
         default="networking.k8s.io/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -26,7 +60,7 @@ class NetworkPolicy(models.V1NetworkPolicy):
     )
 
 
-class ResourceQuota(models.V1ResourceQuota):
+class ResourceQuota(V1ResourceQuota):
     api_version: StrictStr = Field(
         default="v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -38,7 +72,7 @@ class ResourceQuota(models.V1ResourceQuota):
     )
 
 
-class LimitRange(models.V1LimitRange):
+class LimitRange(V1LimitRange):
     api_version: StrictStr = Field(
         default="v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -50,7 +84,7 @@ class LimitRange(models.V1LimitRange):
     )
 
 
-class PodDisruptionBudget(models.V1PodDisruptionBudget):
+class PodDisruptionBudget(V1PodDisruptionBudget):
     api_version: StrictStr = Field(
         default="policy/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -62,7 +96,7 @@ class PodDisruptionBudget(models.V1PodDisruptionBudget):
     )
 
 
-class ServiceAccount(models.V1ServiceAccount):
+class ServiceAccount(V1ServiceAccount):
     api_version: StrictStr = Field(
         default="v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -74,7 +108,7 @@ class ServiceAccount(models.V1ServiceAccount):
     )
 
 
-class Secret(models.V1Secret):
+class Secret(V1Secret):
     api_version: StrictStr = Field(
         default="v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -86,7 +120,7 @@ class Secret(models.V1Secret):
     )
 
 
-class SecretList(models.V1SecretList):
+class SecretList(V1SecretList):
     api_version: StrictStr = Field(
         default="v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -98,7 +132,7 @@ class SecretList(models.V1SecretList):
     )
 
 
-class ConfigMap(models.V1ConfigMap):
+class ConfigMap(V1ConfigMap):
     api_version: StrictStr = Field(
         default="v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -110,7 +144,7 @@ class ConfigMap(models.V1ConfigMap):
     )
 
 
-class StorageClass(models.V1StorageClass):
+class StorageClass(V1StorageClass):
     api_version: StrictStr = Field(
         default="storage.k8s.io/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -122,7 +156,7 @@ class StorageClass(models.V1StorageClass):
     )
 
 
-class PersistentVolume(models.V1PersistentVolume):
+class PersistentVolume(V1PersistentVolume):
     api_version: StrictStr = Field(
         default="v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -134,7 +168,7 @@ class PersistentVolume(models.V1PersistentVolume):
     )
 
 
-class PersistentVolumeClaim(models.V1PersistentVolumeClaim):
+class PersistentVolumeClaim(V1PersistentVolumeClaim):
     api_version: StrictStr = Field(
         default="v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -146,7 +180,7 @@ class PersistentVolumeClaim(models.V1PersistentVolumeClaim):
     )
 
 
-class CustomResourceDefinition(models.V1CustomResourceDefinition):
+class CustomResourceDefinition(V1CustomResourceDefinition):
     api_version: StrictStr = Field(
         default="apiextensions.k8s.io/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -158,7 +192,7 @@ class CustomResourceDefinition(models.V1CustomResourceDefinition):
     )
 
 
-class ClusterRole(models.V1ClusterRole):
+class ClusterRole(V1ClusterRole):
     api_version: StrictStr = Field(
         default="rbac.authorization.k8s.io/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -170,7 +204,7 @@ class ClusterRole(models.V1ClusterRole):
     )
 
 
-class ClusterRoleList(models.V1ClusterRoleList):
+class ClusterRoleList(V1ClusterRoleList):
     api_version: StrictStr = Field(
         default="rbac.authorization.k8s.io/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -182,7 +216,7 @@ class ClusterRoleList(models.V1ClusterRoleList):
     )
 
 
-class ClusterRoleBinding(models.V1ClusterRoleBinding):
+class ClusterRoleBinding(V1ClusterRoleBinding):
     api_version: StrictStr = Field(
         default="rbac.authorization.k8s.io/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -194,7 +228,7 @@ class ClusterRoleBinding(models.V1ClusterRoleBinding):
     )
 
 
-class ClusterRoleBindingList(models.V1ClusterRoleBindingList):
+class ClusterRoleBindingList(V1ClusterRoleBindingList):
     api_version: StrictStr = Field(
         default="rbac.authorization.k8s.io/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -206,7 +240,7 @@ class ClusterRoleBindingList(models.V1ClusterRoleBindingList):
     )
 
 
-class Role(models.V1Role):
+class Role(V1Role):
     api_version: StrictStr = Field(
         default="rbac.authorization.k8s.io/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -218,7 +252,7 @@ class Role(models.V1Role):
     )
 
 
-class RoleList(models.V1RoleList):
+class RoleList(V1RoleList):
     api_version: StrictStr = Field(
         default="rbac.authorization.k8s.io/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -230,7 +264,7 @@ class RoleList(models.V1RoleList):
     )
 
 
-class RoleBinding(models.V1RoleBinding):
+class RoleBinding(V1RoleBinding):
     api_version: StrictStr = Field(
         default="rbac.authorization.k8s.io/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -242,7 +276,7 @@ class RoleBinding(models.V1RoleBinding):
     )
 
 
-class RoleBindingList(models.V1RoleBindingList):
+class RoleBindingList(V1RoleBindingList):
     api_version: StrictStr = Field(
         default="rbac.authorization.k8s.io/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -254,7 +288,7 @@ class RoleBindingList(models.V1RoleBindingList):
     )
 
 
-class Service(models.V1Service):
+class Service(V1Service):
     api_version: StrictStr = Field(
         default="v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -266,7 +300,7 @@ class Service(models.V1Service):
     )
 
 
-class DaemonSet(models.V1DaemonSet):
+class DaemonSet(V1DaemonSet):
     api_version: StrictStr = Field(
         default="apps/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -278,7 +312,7 @@ class DaemonSet(models.V1DaemonSet):
     )
 
 
-class Pod(models.V1Pod):
+class Pod(V1Pod):
     api_version: StrictStr = Field(
         default="v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -290,7 +324,7 @@ class Pod(models.V1Pod):
     )
 
 
-class ReplicationController(models.V1ReplicationController):
+class ReplicationController(V1ReplicationController):
     api_version: StrictStr = Field(
         default="v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -302,7 +336,7 @@ class ReplicationController(models.V1ReplicationController):
     )
 
 
-class ReplicaSet(models.V1ReplicaSet):
+class ReplicaSet(V1ReplicaSet):
     api_version: StrictStr = Field(
         default="apps/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -314,7 +348,7 @@ class ReplicaSet(models.V1ReplicaSet):
     )
 
 
-class Deployment(models.V1Deployment):
+class Deployment(V1Deployment):
     api_version: StrictStr = Field(
         default="apps/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -326,7 +360,7 @@ class Deployment(models.V1Deployment):
     )
 
 
-class HorizontalPodAutoscaler(models.V2HorizontalPodAutoscaler):
+class HorizontalPodAutoscaler(V2HorizontalPodAutoscaler):
     api_version: StrictStr = Field(
         default="autoscaling/v2",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -338,7 +372,7 @@ class HorizontalPodAutoscaler(models.V2HorizontalPodAutoscaler):
     )
 
 
-class StatefulSet(models.V1StatefulSet):
+class StatefulSet(V1StatefulSet):
     api_version: StrictStr = Field(
         default="apps/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -350,7 +384,7 @@ class StatefulSet(models.V1StatefulSet):
     )
 
 
-class Job(models.V1Job):
+class Job(V1Job):
     api_version: StrictStr = Field(
         default="batch/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -362,7 +396,7 @@ class Job(models.V1Job):
     )
 
 
-class CronJob(models.V1CronJob):
+class CronJob(V1CronJob):
     api_version: StrictStr = Field(
         default="batch/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -374,7 +408,7 @@ class CronJob(models.V1CronJob):
     )
 
 
-class Ingress(models.V1Ingress):
+class Ingress(V1Ingress):
     api_version: StrictStr = Field(
         default="networking.k8s.io/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501
@@ -386,7 +420,7 @@ class Ingress(models.V1Ingress):
     )
 
 
-class APIService(models.V1APIService):
+class APIService(V1APIService):
     api_version: StrictStr = Field(
         default="apiregistration.k8s.io/v1",
         description="APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",  # noqa: E501

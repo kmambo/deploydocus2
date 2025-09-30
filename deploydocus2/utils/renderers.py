@@ -1,12 +1,12 @@
 import json
-from typing import AnyStr, cast
+from typing import cast
 
 import yaml
 
 from deploydocus2 import K8sModel, K8sModelSequence
 
 
-def render(obj: K8sModelSequence | K8sModel, fmt="python") -> AnyStr:
+def render(obj: K8sModelSequence | K8sModel, fmt="python") -> str:
     """Render a single Kubernetes object as YAML, JSON or a Python dict;
     Or a sequence of Kubernetes objects as YAML, JSON or list of Python dicts.
     Each of these are then converted to a string
