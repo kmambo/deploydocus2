@@ -1,0 +1,6 @@
+[submodule "docs/example/sinple_example_json_server"]
+	path = docs/example/sinple_example_json_server
+	url = https://github.com/kmambo/simple_example_json_server
+[submodule "docs/example/simple_example_json_server"]
+	path = docs/example/simple_example_json_server
+	url = https://github.com/kmambo/simple_example_json_server

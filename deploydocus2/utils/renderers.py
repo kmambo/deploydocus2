@@ -15,7 +15,7 @@ def render(obj: K8sModelSequence | K8sModel, fmt="python") -> str:
         obj: Must be a sequence of Kubernetes objects (usually a list)
             or a single Kubernetes object.
         fmt: The default is 'dict' and will return the dictionary as a string.
-        The other valid values are 'yaml' and
+        The other valid values are 'yaml' and 'json'
 
     Returns:
         The rendered YAML, JSON or Python dictionary.

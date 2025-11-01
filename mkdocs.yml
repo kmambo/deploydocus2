@@ -35,6 +35,9 @@ plugins:
           extensions:
             - griffe_sphinx
             - griffe_pydantic: { schema: true }
+- search
+- autorefs
+
 nav:
 - Get Started:
   - Welcome to deploydocus2: index.md
@@ -42,6 +45,8 @@ nav:
   - Why deploydocus?: motivation.md
 - Example:
   - A web application: example/webapp.md
+  - A web application with metrics: example/webapp-with-metrics.md
+
 validation:
   omitted_files: warn
   absolute_links: warn
@@ -57,9 +62,13 @@ markdown_extensions:
 - pymdownx.superfences
 - pymdownx.highlight:
     pygments_lang_class: true
+    use_pygments: true
+    auto_title: true
+    line_spans: __span
 - pymdownx.extra
 - pymdownx.emoji:
     emoji_index: !!python/name:material.extensions.emoji.twemoji
     emoji_generator: !!python/name:material.extensions.emoji.to_svg
 - pymdownx.tabbed:
     alternate_style: true
+- attr_list

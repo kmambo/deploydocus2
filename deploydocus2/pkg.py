@@ -52,7 +52,8 @@ class InstanceSettings(pyd.BaseModel):
 
 class K8sComponentsModel(pyd.BaseModel):
     """This is created by a Component and represents a collection of Kubernetes
-    objects."""
+    resource objects.
+    """
 
     pkg_name: str = pyd.Field(description="A name of this application")
     pkg_version: str = pyd.Field(

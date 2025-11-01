@@ -37,18 +37,16 @@ docker pull docker.io/pbhowmic/python-jsonserver:0.2
 
 ??? "The Simple Webserver code"
     ```python
-    import json
     import logging.config
     import os
     from datetime import datetime, timezone
-    from http.server import HTTPServer, SimpleHTTPRequestHandler
-    from pathlib import Path
-    from typing import cast, Any
-    from urllib.parse import urlparse, ParseResult
-    # requires you to pip install dotenv into the virtual environment
-    # in which this code will be running
-    from dotenv import load_dotenv
+    from typing import Any, cast
 
+    from dotenv import load_dotenv
+    from fastapi import FastAPI, Request, status
+    from fastapi.responses import JSONResponse
+
+    # Configuration for logging
     CONFIG = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -74,65 +72,82 @@ docker pull docker.io/pbhowmic/python-jsonserver:0.2
             "handlers": [
                 "stderr",
                 "stdout",
-                # "file"
             ],
         },
     }
 
-    logger: logging.Logger
+    # Apply logging configuration
+    logging.config.dictConfig(CONFIG)
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+
+    # Load environment variables
+    load_dotenv(dotenv_path="/var/lib/www/.env")
+    port: int = int(cast(str, os.getenv("HTTP_PORT", "8080")))
+    ip_addr: str = cast(str, os.getenv("HTTP_ADDR", "0.0.0.0"))
+
+    # Create FastAPI app
+    app = FastAPI()
 
 
-    class WebRequestHandler(SimpleHTTPRequestHandler):
-        def get_json_response(self) -> dict[str, Any]:
-            url: ParseResult = urlparse(self.path)
-            path = url.path
-            match path:
-                case "/livez" | "/readyz":
-                    data = {"path": path, "code": 200}
-                case "/":
-                    data = {
-                        "datetime": datetime.now(tz=timezone.utc).isoformat(),
-                        "status": "OK",
-                        "port": port,
-                        "ip_addr": ip_addr,
-                        "code": 200,
-                    }
-                case _:
-                    data = {"error": "Not found", "code": 404}
-            return data
-
-        def do_GET(self):
-            resp = self.get_json_response()
-            code: int = resp.pop("code")
-            self.send_response(code)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-            self.wfile.write(json.dumps(resp).encode("utf-8"))
+    # Define routes
+    @app.get("/")
+    async def root():
+        """
+        Root endpoint, returns current datetime, status, port, and IP address.
+        """
+        return {
+            "datetime": datetime.now(tz=timezone.utc).isoformat(),
+            "status": "OK",
+            "port": port,
+            "ip_addr": ip_addr,
+        }
 
 
+    @app.get("/livez")
+    async def livez():
+        """
+        Liveness probe endpoint.
+        """
+        return {"path": "/livez", "status": "OK"}
+
+
+    @app.get("/readyz")
+    async def readyz():
+        """
+        Readiness probe endpoint.
+        """
+        return {"path": "/readyz", "status": "OK"}
+
+
+    @app.exception_handler(404)
+    async def not_found_handler(request: Request, exc: Any):
+        """
+        Handles 404 Not Found errors.
+        """
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"error": "Not found"},
+        )
+
+
+    # Main entry point for running the server
     if __name__ == "__main__":
-        logging.config.dictConfig(CONFIG)
-        logger = logging.getLogger(__name__)
-        logger.setLevel(logging.DEBUG)
+        import uvicorn
 
-        dirname = Path("/var/lib/www")
-        cfg = load_dotenv(dotenv_path=dirname / ".env")
-        port: int = int(cast(str, os.getenv("HTTP_PORT", "8080")))
-        ip_addr: str = cast(str, os.getenv("HTTP_ADDR", "0.0.0.0"))
-        server = HTTPServer((ip_addr, port), WebRequestHandler)
-        server.serve_forever()
+        uvicorn.run(app, host=ip_addr, port=port)
 
     ```
 
 ```shell
 # And to run this (exposing the container port 8080 to the host;s port 8080)
-docker run --rm -p 8080:8080 --name python-jsonserver-0.2 -d \
-  docker.io/pbhowmic/python-jsonserver:0.2
+docker run --rm -p 8080:8080 --name python-jsonserver-0.1.0 -d \
+  docker.io/pbhowmic/python-jsonserver:0.1.0
 ```
 
 ```shell
 # later, you can delete this running container using
-docker container stop python-jsonserver-0.2
+docker container stop python-jsonserver-0.1.0
 ```
 
 This is a standard webserver that exposes just the base URL `'/'` which when called
