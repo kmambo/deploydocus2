@@ -1,6 +1,6 @@
 from typing import TypeAlias
 
-from kubernetes_asyncio_pydantic import (
+from kubernetes import (
     V1AppArmorProfile,
     V1Capabilities,
     V1PodSecurityContext,

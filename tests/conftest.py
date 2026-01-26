@@ -1,8 +1,10 @@
+from collections import UserDict
 from typing import Mapping, cast
 from unittest.mock import Mock
 
 import pytest
-from kubernetes_asyncio_pydantic import (
+from components.workloads.utils import _ConfigSecret
+from kubernetes import (
     V1Container,
     V1Deployment,
     V1DeploymentSpec,
@@ -19,41 +21,39 @@ from deploydocus2.components.workloads.httpapps import (
     HttpLivenessProbe,
     HttpReadinessProbe,
     HttpStartupProbe,
-    KeyValuePairsNonSensitive,
-    KeyValuePairsSecretsExtSrc,
     RuleType,
     SimpleHttpApplication,
+    _Config,
 )
 
 
 @pytest.fixture
-def app_config_nonsensitive() -> dict[str, KeyValuePairsNonSensitive]:
+def app_config_nonsensitive() -> dict[str, _Config]:
     return {
-        "lone_cfg": KeyValuePairsNonSensitive(
-            kv_pairs={"key1": "value1"},
-            mount_path="/var/run/config",
-        ),
-        "env_vars": KeyValuePairsNonSensitive(kv_pairs={"key1": "value1"}),
+        "lone_cfg": UserDict({"key1": "value1"}),
+        "env_vars": UserDict({"key1": "value1"}),
     }
 
 
 @pytest.fixture
-def app_config_sensitive_mock() -> Mapping[str, KeyValuePairsSecretsExtSrc]:
-    kv_ext_src = Mock(KeyValuePairsSecretsExtSrc)
-    kv_ext_src.kv_pairs = {"secret_key1": "secret_value1"}
+def app_config_sensitive_mock() -> Mapping[str, _ConfigSecret]:
+    kv_ext_src = Mock(_ConfigSecret)
+    kv_ext_src.data = {"secret_key1": "secret_value1"}
+
     return {"mock_secret": kv_ext_src}
 
 
-@pytest.fixture
-def app_config_nonsensitive_mock() -> Mapping[str, KeyValuePairsNonSensitive]:
-    ret = {"env_dir": Mock(KeyValuePairsNonSensitive)}
-    return ret
+# @pytest.fixture
+# def app_config_nonsensitive_mock() -> Mapping[str, KeyValuePairsNonSensitive]:
+#     ret = {"env_dir": Mock(KeyValuePairsNonSensitive)}
+#     ret.
+#     return ret
 
 
 @pytest.fixture
 def application(
-    app_config_nonsensitive_mock: Mapping[str, KeyValuePairsNonSensitive],
-    app_config_sensitive_mock: Mapping[str, KeyValuePairsSecretsExtSrc],
+    app_config_nonsensitive: Mapping[str, _Config],
+    app_config_sensitive_mock: Mapping[str, _ConfigSecret],
 ):
     return SimpleHttpApplication(
         app_name="test-app",
@@ -66,7 +66,7 @@ def application(
         app_command=["--arg1=value1", "--arg2=value2"],
         liveness_probe=HttpLivenessProbe(rel_url="/liveness"),
         readiness_probe=HttpReadinessProbe(rel_url="/readyz"),
-        app_config_non_sensitive=app_config_nonsensitive_mock,
+        app_config_non_sensitive=app_config_nonsensitive,
         app_config_secrets=app_config_sensitive_mock,
         ingress=HttpIngressHostWithRules(
             host="api.mytestapp.app",

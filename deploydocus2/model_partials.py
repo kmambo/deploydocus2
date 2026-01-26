@@ -1,4 +1,4 @@
-from kubernetes_asyncio_pydantic import (
+from kubernetes import (
     V1APIService,
     V1ClusterRole,
     V1ClusterRoleBinding,

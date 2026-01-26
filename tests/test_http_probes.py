@@ -1,6 +1,6 @@
 from typing import cast
 
-from kubernetes_asyncio_pydantic import V1HTTPGetAction, V1Probe
+from kubernetes import V1HTTPGetAction, V1Probe
 
 from deploydocus2.components.workloads import (
     HttpLivenessProbe,

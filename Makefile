@@ -29,7 +29,8 @@ lint: poetry.lock deploydocus2 tests
 	$(RUNNER_CMD) isort deploydocus2 tests
 	$(RUNNER_CMD) black deploydocus2 tests
 	$(RUNNER_CMD) flake8 deploydocus2 tests
-	$(RUNNER_CMD) $(DIR)/scripts/dmypy.sh deploydocus2 tests
+	$(RUNNER_CMD) mypy deploydocus2 tests
+	#$(RUNNER_CMD) $(DIR)/scripts/dmypy.sh deploydocus2 tests
 
 .PHONY: sync
 sync: poetry.lock

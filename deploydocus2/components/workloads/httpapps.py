@@ -1,13 +1,12 @@
-import abc
-import base64
 import enum
-from collections.abc import Mapping
+from collections import ChainMap
 from pathlib import Path
-from typing import Annotated, Any, Callable, Optional, Self, Sequence, cast
+from typing import Optional, Self, Sequence, cast
 
-from kubernetes_asyncio_pydantic import (
+import pydantic
+from kubernetes import (
     IntstrIntOrString,
-    V1ConfigMapVolumeSource,
+    V1ConfigMap,
     V1Container,
     V1ContainerPort,
     V1DeploymentSpec,
@@ -23,16 +22,13 @@ from kubernetes_asyncio_pydantic import (
     V1PodSpec,
     V1PodTemplateSpec,
     V1Probe,
+    V1Secret,
     V1ServicePort,
     V1ServiceSpec,
-    V1Volume,
-    V1VolumeMount,
 )
 from pydantic import (
-    AfterValidator,
     BaseModel,
     Field,
-    SecretStr,
     model_validator,
 )
 
@@ -50,8 +46,16 @@ from deploydocus2._types import (
     ServiceSequence,
 )
 from deploydocus2.components.models import DeploydocusComponent
-from deploydocus2.model_partials import ConfigMap, Deployment, Ingress, Secret, Service
+from deploydocus2.model_partials import Deployment, Ingress, Service
 from deploydocus2.pkg import InstanceSettings, K8sComponentsModel
+
+from .utils import (
+    _Config,
+    _ConfigSecret,
+    to_config_map,
+    to_secret,
+    volume_mount_config_map_or_secret,
+)
 
 
 class HttpProbe(BaseModel):
@@ -141,120 +145,6 @@ class HttpIngressHostWithRules(BaseModel):
         return self
 
 
-def mk_upper_case(key: str) -> str:
-    """Converts a key to uppercase. Typically used to convert a lower-case key to
-    uppercase and expose as an environment variable. so a key 'client-id' becomes an
-    env var 'CLIENT_ID' (Note the changing of the minus to an underscore)
-
-    Args:
-        key: The key to convert.
-
-    Returns:
-
-    """
-    return key.upper().replace("-", "_")
-
-
-class KeysMapper(abc.ABC):
-    _key_mapper_fn: Callable[[str], str] = lambda x: x
-
-    @property
-    def keys_mapper(self) -> Callable[[str], str]:
-        return self._key_mapper_fn
-
-    @keys_mapper.setter
-    def keys_mapper(self, transformer: Callable[[str], str]):
-        """Used to set a function which is used to change how the the KV-pairs'
-        keys are exposed. Typically used to change keys such as 'client-id' to
-        'CLIENT_ID' before exposing as environment variables.
-
-        Args:
-            transformer:
-
-        Returns:
-
-        """
-        self._key_mapper_fn = transformer
-
-    @abc.abstractmethod
-    def map_keys(self) -> Mapping[str, str]: ...
-
-
-class KeyValuePairsNonSensitive(BaseModel, KeysMapper):
-    """Becomes a Kubernetes ConfigMap which exposes these KV-pairs as either
-    environment variables or as files mounted on the container's as a volume on a given
-    path. Note: do not use this for any sensitive  info such as passwords, SSL private
-    keys, SSN etc. There are different classes to handle sensitive information.
-    """
-
-    kv_pairs: Mapping[str, str] = Field(description="The key-value pairs")
-    mount_path: Path | None = Field(
-        None,
-        description="Leave it unset (None) if you want to expose "
-        "these as environment variables. Otherwise, the KV-pairs are exposed under "
-        "the directory specified by this field. The keys becomes the filenames and "
-        "the values become the file contents",
-        strict=False,
-    )
-
-    def map_keys(self) -> Mapping[str, str]:
-        return {
-            (self.keys_mapper(k)): v
-            for k, v in self.kv_pairs.items()
-            if self.keys_mapper(k)
-        }
-
-    def generate_config_map(
-        self,
-        name: str,
-        namespace: str,
-        *,
-        annotations: dict[str, str] | None = None,
-        labels: dict[str, str] | None = None,
-    ) -> ConfigMap:
-        _kv_xform = cast(dict[str, Any], self.map_keys())
-
-        return ConfigMap(
-            data=_kv_xform,
-            metadata=V1ObjectMeta(
-                name=name,
-                namespace=namespace,
-                annotations=annotations or {},
-                labels=labels or {},
-            ),
-        )
-
-
-def encode_secret_data(value: str) -> SecretStr:
-    return SecretStr(base64.b64encode(value.encode("utf-8")).decode("utf-8"))
-
-
-class KeyValuePairsSensitive(KeyValuePairsNonSensitive):
-    kv_pairs: Annotated[dict[str, str], AfterValidator(encode_secret_data)]
-
-
-class KeyValuePairsSecretsExtSrc(BaseModel, KeysMapper):
-    """Becomes a Kubernetes secret. Exposes these KV-pairs as either environment
-    variables or as files mounted on the container's as a volume on a given path.
-    """
-
-    secrets_key_mapping: dict[str, str] = Field(
-        description="This is to control which entries are exposed in the Kubernetes "
-        "namespace and what keys they will be exposed as. For example, "
-        " if your secrets in Vault KV store has 2 secrets as "
-        "{'key1': 'value1' ,'key2': 'value2'}, and you only want to "
-        "expose 'value2' as an environment variable 'MY_TERRIBLE_SECRET' "
-        "then you will need this field to be {'key2': 'MY_TERRIBLE_SECRET'} "
-    )
-
-    def map_keys(self) -> Mapping[str, str]:
-        return {(self.keys_mapper(k)): v for k, v in self.secrets_key_mapping.items()}
-
-    def generate_secrets_mapping(self, metadata: V1ObjectMeta | None = None):
-        _kv_xform = self.map_keys()
-        return Secret(data=_kv_xform, type="Opaque", metadata=metadata)
-
-
 class SimpleHttpApplication(DeploydocusComponent):
     """Represents a simple HTTP(s) application which generates a single Kubernetes
     service, a deployment and an ingress object or a Gateway API.
@@ -304,7 +194,7 @@ class SimpleHttpApplication(DeploydocusComponent):
         "'--env1=arg1 --env2=arg2', "
         "then set this field to ['--env1=arg1', '--env2=arg2']",
     )
-    app_config_non_sensitive: dict[str, KeyValuePairsNonSensitive] | None = Field(
+    app_config_non_sensitive: dict[str, _Config] | None = Field(
         None,
         description="Provides (non-sensitive) configuration information for the "
         "application either as environment variables or as files mounted"
@@ -313,16 +203,26 @@ class SimpleHttpApplication(DeploydocusComponent):
         "directories), this field is a dictionary with keys that serve as unique names "
         "in the application container's context.",
     )
-    app_config_secrets: dict[str, KeyValuePairsSecretsExtSrc] | None = Field(
+    config_map_mount_path: dict[Path, str] | None = Field(
+        None,
+        description="Mount the named-config in the field `app_config_non_sensitive` "
+        "to this path.",
+    )
+    app_config_secrets: dict[str, _ConfigSecret] | None = Field(
         None,
         description="Provides sensitive configuration information for the application."
         " Usually it is from an external source like Vault KV engine.",
+    )
+    secrets_mount_path: dict[Path, str] | None = Field(
+        None,
+        description="Mount the named-secret in the field `app_config_secrets` "
+        "to this path.",
     )
     replicas: int | None = Field(
         None,
         description="Number of application instances to run in parallel. "
         "If left unset, a single replica will be created. (This field itself will be "
-        "None). ",
+        "None).",
     )
     http_named_ports: dict[str, int] = Field(
         default={
@@ -402,7 +302,13 @@ class SimpleHttpApplication(DeploydocusComponent):
 
 
 class HttpK8sComponentsModel(K8sComponentsModel):
-    hl_class: SimpleHttpApplication
+    hl_class: SimpleHttpApplication = pydantic.Field(
+        description="A sane template class for HTTP applications to be defined; "
+        "from which to derive Kubernetes objects which can be applied to "
+        "a single namespace in a cluster to run an HTTP application."
+    )
+    _config_maps: list[V1ConfigMap] | None = None
+    _secrets: list[V1Secret] | None = None
 
     def render_namespaces(
         self,
@@ -438,32 +344,34 @@ class HttpK8sComponentsModel(K8sComponentsModel):
         """
         if self.hl_class.app_config_non_sensitive is None:
             return []
-        cfg_gen: Callable[
-            [str, KeyValuePairsNonSensitive], ConfigMap
-        ] = lambda k, v: cast(KeyValuePairsNonSensitive, v).generate_config_map(
-            name=k,
-            namespace=self.instance_settings.namespace,
-            labels=cast(dict[str, str], self.default_selectors),
-        )
-        ret = [cfg_gen(k, v) for k, v in self.hl_class.app_config_non_sensitive.items()]
+        self._config_maps = [
+            to_config_map(
+                name=f"{k}",
+                namespace=self.instance_settings.namespace,
+                labels=cast(dict[str, str], self.default_selectors),
+                cfg=cfg,
+            )
+            for k, cfg in self.hl_class.app_config_non_sensitive.items()
+        ]
 
-        return ret
+        return self._config_maps
 
     def render_secrets(
         self,
     ) -> SecretSequence:
-        return (
-            [
-                v.generate_secrets_mapping(
-                    metadata=V1ObjectMeta(
-                        name=k, namespace=self.instance_settings.namespace
-                    )
-                )
-                for k, v in self.hl_class.app_config_secrets.items()
-            ]
-            if self.hl_class.app_config_secrets
-            else []
-        )
+        if self.hl_class.app_config_secrets is None:
+            return []
+        self._secrets = [
+            to_secret(
+                cfg_secret=cfg,
+                name=f"{k}",
+                namespace=self.instance_settings.namespace,
+                labels=cast(dict[str, str], self.default_selectors),
+            )
+            for k, cfg in self.hl_class.app_config_secrets.items()
+        ]
+
+        return self._secrets
 
     def render_services(
         self,
@@ -473,7 +381,11 @@ class HttpK8sComponentsModel(K8sComponentsModel):
             namespace=self.instance_settings.namespace,
         )
         ports = [
-            V1ServicePort(protocol="TCP", port=80, target_port=IntstrIntOrString(port))
+            V1ServicePort(
+                protocol="TCP",
+                port=80,
+                target_port=IntstrIntOrString(actual_instance=port),
+            )
             for port in cast(dict[str, int], self.hl_class.app_ports)
         ]
         spec = V1ServiceSpec(
@@ -490,6 +402,11 @@ class HttpK8sComponentsModel(K8sComponentsModel):
     def render_deployments(
         self,
     ) -> DeploymentSequence:
+        """
+
+        Returns:
+
+        """
         pod_labels = self.default_labels
 
         deployment_meta = V1ObjectMeta(
@@ -497,33 +414,30 @@ class HttpK8sComponentsModel(K8sComponentsModel):
             namespace=self.instance_settings.namespace,
             labels=pod_labels,
         )
-        cfg_maps = self.render_configmaps()
-        mnt_paths = [
-            (
-                cast(
-                    dict[str, KeyValuePairsNonSensitive],
-                    self.hl_class.app_config_non_sensitive,
-                )[cast(str, cast(V1ObjectMeta, cm.metadata).name)].mount_path
-                or "_",
-                cm,
-            )
-            for cm in cfg_maps
-        ]
 
-        volume_mounts = [
-            V1VolumeMount(
-                name=cast(V1ObjectMeta, cm.metadata).name,
-                mount_path=mnt_pth if mnt_pth != "_" else None,
-            )
-            for mnt_pth, cm in mnt_paths
-        ]
+        # d = cast(_Config, self.hl_class.app_config_non_sensitive)
+        # mnt_paths = [
+        #     (
+        #         d[cast(str, cast(V1ObjectMeta, cm.metadata).name)].mount_path or "_",
+        #         cm,
+        #     )
+        #     for cm in cfg_maps
+        # ]
+        #
+        # volume_mounts = [
+        #     V1VolumeMount(
+        #         name=cast(V1ObjectMeta, cm.metadata).name,
+        #         mount_path=mnt_pth if mnt_pth != "_" else None,
+        #     )
+        #     for mnt_pth, cm in mnt_paths
+        # ]
         liveness_probe = (
             V1Probe(
                 httpGet=V1HTTPGetAction(
                     path=self.hl_class.liveness_probe.rel_url,
-                    port=IntstrIntOrString("http"),
+                    port=IntstrIntOrString(actual_instance="http"),
                 ),
-                initial_delay_seoonds=self.hl_class.liveness_probe.delay_first_probe,
+                initial_delay_seconds=self.hl_class.liveness_probe.delay_first_probe,
                 # noqa
                 period_seconds=self.hl_class.liveness_probe.check_freq,
             )
@@ -535,7 +449,7 @@ class HttpK8sComponentsModel(K8sComponentsModel):
                 V1Probe(
                     httpGet=V1HTTPGetAction(
                         path=self.hl_class.readiness_probe.rel_url,
-                        port=IntstrIntOrString("http"),
+                        port=IntstrIntOrString(actual_instance="http"),
                     )
                 )
             )
@@ -547,7 +461,7 @@ class HttpK8sComponentsModel(K8sComponentsModel):
                 V1Probe(
                     httpGet=V1HTTPGetAction(
                         path=self.hl_class.startup_probe.rel_url,
-                        port=IntstrIntOrString("http"),
+                        port=IntstrIntOrString(actual_instance="http"),
                     )
                 )
             )
@@ -560,7 +474,7 @@ class HttpK8sComponentsModel(K8sComponentsModel):
             image_pull_policy="Always",
             command=self.hl_class.app_command,
             args=self.hl_class.app_entrypoint_args,
-            volume_mounts=volume_mounts,
+            # volume_mounts=volume_mounts,
             ports=[
                 V1ContainerPort(protocol="TCP", container_port=port_no, name=port_name)
                 for port_name, port_no in self.hl_class.http_named_ports.items()
@@ -570,27 +484,35 @@ class HttpK8sComponentsModel(K8sComponentsModel):
             readiness_probe=readines_probe,
             startup_probe=startup_probe,
         )
-        podspec = V1PodTemplateSpec(
+        pod_spec = V1PodSpec(
+            automountServiceAccountToken=False,
+            serviceAccountName=f"{self.instance_settings.name}-{self.pkg_name}-sa",
+            containers=[container],
+        )
+
+        for cfg_map in (self._secrets or []) + (self._config_maps or []):
+            for path, cfg_map_name in ChainMap(
+                self.hl_class.config_map_mount_path or {},
+                self.hl_class.secrets_mount_path or {},
+            ).items():
+                if cast(V1ObjectMeta, cfg_map.metadata).name == cfg_map_name:
+                    volume_mount_config_map_or_secret(
+                        pod_spec=pod_spec,
+                        path=path,
+                        config_map_name=cast(V1ObjectMeta, cfg_map.metadata).name,
+                        container_name=container.name,
+                        secret_name=None,
+                        volume_name=f"{cfg_map_name}-vol-cfg",
+                    )
+
+        pod_tmpl_spec = V1PodTemplateSpec(
             metadata=V1ObjectMeta(
                 labels=pod_labels,
             ),
-            spec=V1PodSpec(
-                automountServiceAccountToken=False,
-                serviceAccountName=f"{self.instance_settings.name}-{self.pkg_name}-sa",
-                containers=[container],
-                volumes=[
-                    V1Volume(
-                        name=cast(V1ObjectMeta, cm.metadata).name,
-                        config_map=V1ConfigMapVolumeSource(
-                            name=cast(V1ObjectMeta, cm.metadata).name,
-                        ),
-                    )
-                    for cm in cfg_maps
-                ],
-            ),
+            spec=pod_spec,
         )
         deployment_spec = V1DeploymentSpec(
-            template=podspec,
+            template=pod_tmpl_spec,
             replicas=self.hl_class.replicas,
             selector=V1LabelSelector(matchLabels=self.default_selectors),
         )

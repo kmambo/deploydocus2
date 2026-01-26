@@ -1,7 +1,7 @@
 from typing import cast
 
 import pytest
-from kubernetes_asyncio_pydantic import (
+from kubernetes import (
     V1Container,
     V1ContainerPort,
     V1Deployment,

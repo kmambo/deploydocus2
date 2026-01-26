@@ -54,8 +54,8 @@ Assuming
 from deploydocus2.components.workloads import SimpleHttpApplication
 from deploydocus2.pkg import K8sModelSequence
 from deploydocus2.utils import render
-from kubernetes_asyncio_pydantic import configuration
-from kubernetes_asyncio_pydantic.api_client import ApiClient, Configuration
+from kubernetes import configuration
+from kubernetes.api_client import ApiClient, Configuration
 app_install = SimpleHttpApplication(
                 app_name='httpserver',
                 version="1.0.0",

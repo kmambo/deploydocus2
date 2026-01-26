@@ -1,6 +1,6 @@
 from typing import cast
 
-from kubernetes_asyncio_pydantic import (
+from kubernetes import (
     V1HTTPIngressRuleValue,
     V1Ingress,
     V1IngressRule,
