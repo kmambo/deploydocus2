@@ -3,7 +3,6 @@ from typing import Mapping, cast
 from unittest.mock import Mock
 
 import pytest
-from components.workloads.utils import _ConfigSecret
 from kubernetes import (
     V1Container,
     V1Deployment,
@@ -24,6 +23,7 @@ from deploydocus2.components.workloads.httpapps import (
     RuleType,
     SimpleHttpApplication,
     _Config,
+    _ConfigSecret,
 )
 
 
